@@ -1,0 +1,136 @@
+﻿{
+	"name":"90x60",
+	"width":90,
+	"height":60,
+	"characterset": "Default",
+	"hardareaborders": true,
+	"brightness": 120,
+	"arealist": [
+		{
+			"name": "team1name",
+			"positionX": 0,
+			"positionY": 0,
+			"width": 44,
+			"height": 10
+		},
+		{
+			"name": "team2name",
+			"positionX": 46,
+			"positionY": 0,
+			"width": 44,
+			"height": 10
+		},
+		{
+			"name": "team1goals",
+			"positionX": 9,
+			"positionY": 12,
+			"width": 23,
+			"height": 15
+		},
+		{
+			"name": "team2goals",
+			"positionX": 58,
+			"positionY": 12,
+			"width": 23,
+			"height": 15
+		},
+		{
+			"name": "goaldivider",
+			"positionX": 43,
+			"positionY": 14,
+			"width": 4,
+			"height": 10
+		},
+		{
+			"name": "team1penalties",
+			"positionX": 2,
+			"positionY": 31,
+			"width": 16,
+			"height": 29
+		},
+		{
+			"name": "team2penalties",
+			"positionX": 72,
+			"positionY": 31,
+			"width": 16,
+			"height": 29
+		},
+		{
+			"name": "time",
+			"positionX": 20,
+			"positionY": 31,
+			"width": 50,
+			"height": 15
+		},
+		{
+			"name": "text",
+			"positionX": 20,
+			"positionY": 48,
+			"width": 50,
+			"height": 12
+		}
+	],
+
+	"characterlist": [
+		{
+			"name": "Zero",
+			"char": "0",
+			"file": "0.char"
+		},
+		{
+			"name": "One",
+			"char": "1",
+			"file": "1.char"
+		},
+		{
+			"name": "Two",
+			"char": "2",
+			"file": "2.char"
+		},
+		{
+			"name": "Three",
+			"char": "3",
+			"file": "3.char"
+		},
+		{
+			"name": "Four",
+			"char": "4",
+			"file": "4.char"
+		},
+		{
+			"name": "Five",
+			"char": "5",
+			"file": "5.char"
+		},
+		{
+			"name": "Six",
+			"char": "6",
+			"file": "6.char"
+		},
+		{
+			"name": "Seven",
+			"char": "7",
+			"file": "7.char"
+		},
+		{
+			"name": "Eight",
+			"char": "8",
+			"file": "8.char"
+		},
+		{
+			"name": "Nine",
+			"char": "9",
+			"file": "9.char"
+		},
+		{
+			"name": "Colon",
+			"char": ":",
+			"file": "colon.char"
+		},
+		{
+			"name": "Space",
+			"char": " ",
+			"file": "space.char"
+		}
+	]
+}

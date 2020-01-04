@@ -328,3 +328,6 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+LedGameDisplayApi/GameDatabase.db-wal
+LedGameDisplayApi/GameDatabase.db-shm
+LedGameDisplayApi/GameDatabase.db
