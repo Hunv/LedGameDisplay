@@ -1,0 +1,28 @@
+﻿@page "/tournaments/{tournamentIdStr}"
+@using LedGameDisplayFrontend.Data
+@using System.Net.Http
+@using System.Web
+@inject NavigationManager NavigationManager
+
+<h1>@tournament.Name</h1>
+
+<a href="/edittournament">Turnierdetails bearbeiten</a>
+
+
+@code {
+    private Tournament tournament = new Tournament();
+
+    [Parameter]
+    public string tournamentIdStr { get; set; }
+    private int tournamentId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (int.TryParse(tournamentIdStr, out tournamentId))
+        {
+            tournament = await PanelApiService.GetTournamentAsync(tournamentId);
+        }
+    }
+}
+
+

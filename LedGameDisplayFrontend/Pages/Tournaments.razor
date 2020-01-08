@@ -1,0 +1,50 @@
+﻿@page "/tournaments"
+@using LedGameDisplayFrontend.Data
+
+<h1>Turniere</h1>
+
+<p>Turnierliste</p>
+
+<a href="/addtournament">Neues Turnier erstellen</a>
+
+@if (tournaments == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>City</th>
+                <th>Place</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var tournament in tournaments.Reverse())
+            {
+            <tr>
+                <td>@tournament.Date.ToShortDateString()</td>
+                <td><a href="/tournaments/@tournament.Id">@tournament.Name</a></td>
+                <td>@tournament.City</td>
+                <td>@tournament.Place</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    private LedGameDisplayFrontend.Data.Tournament[] tournaments;
+
+    protected override async Task OnInitializedAsync()
+    {
+        tournaments = await PanelApiService.GetTournamentsAsync();
+    }
+}
+
+

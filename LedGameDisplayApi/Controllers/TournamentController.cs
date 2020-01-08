@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using LedGameDisplayApi.DataModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Web;
 
 namespace LedGameDisplayApi.Controllers
 {
@@ -47,10 +48,14 @@ namespace LedGameDisplayApi.Controllers
         }
 
         // POST: api/Tournament
-        //Example Tournament String: {"name":"Schlickteufel Cup 2020","city":"Elmshorn","place":"Traglufthalle"}
+        //Example Tournament String: {"name":"Schlickteufel Cup 2020","city":"Elmshorn","place":"Traglufthalle","date":"2019-03-28T00:00:00"}
         [HttpPost]
         public void PostTournament([FromBody] Tournament value)
         {
+            value.City = HttpUtility.UrlDecode(value.City);
+            value.Name = HttpUtility.UrlDecode(value.Name);
+            value.Place = HttpUtility.UrlDecode(value.Place);
+
             using (var dbContext = new MyDbContext())
             {
                 dbContext.Tournaments.Add(value);
@@ -63,6 +68,10 @@ namespace LedGameDisplayApi.Controllers
         [HttpPut("{id}")]
         public void PutTournament(int id, [FromBody] Tournament value)
         {
+            value.City = HttpUtility.UrlDecode(value.City);
+            value.Name = HttpUtility.UrlDecode(value.Name);
+            value.Place = HttpUtility.UrlDecode(value.Place);
+
             using (var dbContext = new MyDbContext())
             {
                 var toUpdate = dbContext.Tournaments.SingleOrDefault(x => x.Id == id);
