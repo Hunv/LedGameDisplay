@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace LedGameDisplayApi.DataModel
@@ -18,9 +20,6 @@ namespace LedGameDisplayApi.DataModel
         [Required]
         [MaxLength(256)]
         public string Lastname { get; set; }
-                
-        [MaxLength(256)]
-        public string Clubname { get; set; }
 
         public DateTime Birthday { get; set; }
 
@@ -36,6 +35,20 @@ namespace LedGameDisplayApi.DataModel
         public bool IsActive { get; set; }
         public bool IsCaptain { get; set; }
         public bool IsViceCaptain { get; set; }
+
+        [JsonIgnore]        
+        [NotMapped]
+        public int TeamId 
+        { 
+            get { return Team == null ? 0 : Team.Id; } 
+            set 
+            {
+                using (var dbContext = new MyDbContext())
+                {
+                    Team = dbContext.Teams.SingleOrDefault(x => x.Id == value);
+                }
+            } 
+        }
 
         public Team Team { get; set; }
     }

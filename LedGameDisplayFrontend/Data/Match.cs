@@ -25,9 +25,9 @@ namespace LedGameDisplayFrontend.Data
         public TimeSpan TimeLeft { get; set; }
         public ICollection<Player> Referees { get; set; }
         public ICollection<Penalty> Penalties { get; set; }
-        public DateTime StartPlaned { get; set; }
-        public DateTime StartActual { get; set; }
-        
+        public DateTime StartPlaned { get; set; } = DateTime.Now;
+        public DateTime StartActual { get; set; } = DateTime.Now;
+
         public Tournament Tournament { get; set; }
     }
 }

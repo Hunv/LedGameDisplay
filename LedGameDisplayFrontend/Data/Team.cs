@@ -23,6 +23,6 @@ namespace LedGameDisplayFrontend.Data
         [MaxLength(256)]
         public string Clubname { get; set; }
 
-        public ICollection<Player> Players { get; set; }
+        public ICollection<Player> Players { get; set; } = new List<Player>();
     }
 }

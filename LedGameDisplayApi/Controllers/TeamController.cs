@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using LedGameDisplayApi.DataModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -51,6 +52,10 @@ namespace LedGameDisplayApi.Controllers
         [HttpPost]
         public void PostTeam([FromBody] Team value)
         {
+            value.Name = HttpUtility.UrlDecode(value.Name);
+            value.Clubname = HttpUtility.UrlDecode(value.Clubname);
+            value.Shortname = HttpUtility.UrlDecode(value.Shortname);
+
             using (var dbContext = new MyDbContext())
             {
                 dbContext.Teams.Add(value);
@@ -63,6 +68,10 @@ namespace LedGameDisplayApi.Controllers
         [HttpPut("{id}")]
         public void PutTeam(int id, [FromBody] Team value)
         {
+            value.Name = HttpUtility.UrlDecode(value.Name);
+            value.Clubname = HttpUtility.UrlDecode(value.Clubname);
+            value.Shortname = HttpUtility.UrlDecode(value.Shortname);
+
             using (var dbContext = new MyDbContext())
             {
                 var toUpdate = dbContext.Teams.SingleOrDefault(x => x.Id == id);

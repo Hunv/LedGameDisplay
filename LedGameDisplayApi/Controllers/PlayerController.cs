@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using LedGameDisplayApi.DataModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -51,6 +52,9 @@ namespace LedGameDisplayApi.Controllers
         [HttpPost]
         public void PostPlayer([FromBody] Player value)
         {
+            value.Firstname = HttpUtility.UrlDecode(value.Firstname);
+            value.Lastname = HttpUtility.UrlDecode(value.Lastname);
+
             using (var dbContext = new MyDbContext())
             {
                 dbContext.Players.Add(value);
@@ -63,6 +67,9 @@ namespace LedGameDisplayApi.Controllers
         [HttpPut("{id}")]
         public void PutPlayer(int id, [FromBody] Player value)
         {
+            value.Firstname = HttpUtility.UrlDecode(value.Firstname);
+            value.Lastname = HttpUtility.UrlDecode(value.Lastname);
+
             using (var dbContext = new MyDbContext())
             {
                 var toUpdate = dbContext.Players.SingleOrDefault(x => x.Id == id);

@@ -1,0 +1,166 @@
+﻿@page "/addplayer"
+@using LedGameDisplayFrontend.Data
+@using System.Net.Http
+@using System.Web
+@using System.Text.Json
+@inject NavigationManager NavigationManager
+
+<h1>Spieler erstellen</h1>
+
+@if (teamList == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h2>Spieler Details</h2>
+    <EditForm Model="@newPlayer" OnValidSubmit="@SavePlayer">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <InputCheckbox id="chkIsActive" class="form-check-label" type="checkbox" @bind-Value="newPlayer.IsActive" />
+        <a>Ist aktiv</a>
+        <br />
+
+        <a>Vorname</a>
+        <br />
+        <InputText id="txtFirstname" class="form-control" type="text" @bind-Value="newPlayer.Firstname" />
+        <ValidationMessage For="@(() => newPlayer.Firstname)" />
+        <br />
+
+        <a>Nachname</a>
+        <br />
+        <InputText id="txtLastname" class="form-control" type="text" @bind-Value="newPlayer.Lastname" />
+        <ValidationMessage For="@(() => newPlayer.Lastname)" />
+        <br />
+
+        <a>Geburtstag</a>
+        <br />
+        <InputDate id="txtBirthday" class="form-control" type="date" @bind-Value="newPlayer.Birthday" />
+        <ValidationMessage For="@(() => newPlayer.Birthday)" />
+        <br />
+
+        <a>Geschlecht</a>
+        <br />
+        <select id="cmbSex" class="form-control" @bind="newPlayer.Sex">
+            <option selected value="m">männlich</option>
+            <option value="w">weiblich</option>
+            <option value="d">divers</option>
+        </select>
+        <br />
+
+        <a>Ablauf Sport-/Tauchtauglichkeit</a>
+        <br />
+        <InputDate id="txtHealthCertificationExpireDate" class="form-control" type="date" @bind-Value="newPlayer.HealthCertificationExpireDate" />
+        <ValidationMessage For="@(() => newPlayer.HealthCertificationExpireDate)" />
+        <br />
+
+        <br />
+        <h2>Vereinsangaben</h2>
+
+        <a>Verein</a>
+        <br />
+        <select id="cmbTeam" class="form-control" @bind="newPlayer.TeamId">
+            <option value="0">-- Verein wählen --</option>
+            @foreach (var team in teamList)
+            {
+                @if (team.Id == newPlayer.TeamId)
+                {
+                    <option selected value="@team.Id">@team.Name (@team.Clubname)</option>
+                }
+                else
+                {
+                    <option value="@team.Id">@team.Name (@team.Clubname)</option>
+                }
+            }
+        </select>
+        <ValidationMessage For="@(() => newPlayer.TeamId)" />
+        <br />
+
+
+        <InputCheckbox id="chkIsCaptain" class="form-check-label" type="checkbox" @bind-Value="newPlayer.IsCaptain" />
+        <a>Ist Teamkapitän</a>
+        <br />
+
+        <InputCheckbox id="chkIsViceCaptain" class="form-check-label" type="checkbox" @bind-Value="newPlayer.IsViceCaptain" />
+        <a>Ist Vizekapitän</a>
+        <br />
+
+        <br />
+        <h2>Schiedrichter Befähigung</h2>
+
+        <a>Schiedsrichter Zertifizierung</a>
+        <br />
+        <InputText id="txtRefereeLevel" class="form-control" type="text" @bind-Value="newPlayer.RefereeLevel" />
+        <br />
+
+        <a>Ablauf Schiedsrichter Zertifizierung</a>
+        <br />
+        <InputDate id="txtRefereeLevelExpireDate" class="form-control" type="date" @bind-Value="newPlayer.RefereeLevelExpireDate" />
+        <ValidationMessage For="@(() => newPlayer.RefereeLevelExpireDate)" />
+        <br />
+
+        <button class="btn btn-primary" type="submit">Speichern</button>
+    </EditForm>
+
+    @*<button class="btn btn-primary" @onclick="SavePlayer">Speichern</button>*@
+
+}
+
+@code {
+    private Player newPlayer = new Player() { Team = new Team() };
+    private Team[] teamList = new Team[0];
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        teamList = await PanelApiService.GetTeamsAsync();
+    }
+
+    private async void SavePlayer()
+    {
+        HttpClient client = new HttpClient();
+
+        JsonSerializerOptions jso = new JsonSerializerOptions()
+        {
+            IgnoreNullValues = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
+        var playerJson = "";
+        using (var stream = new System.IO.MemoryStream())
+        {
+            await JsonSerializer.SerializeAsync<Player>(stream, newPlayer, jso);
+            stream.Position = 0;
+            using var reader = new System.IO.StreamReader(stream);
+            playerJson = await reader.ReadToEndAsync();
+        }
+
+        var requestMessage = new HttpRequestMessage()
+        {
+            Method = new HttpMethod("POST"),
+            RequestUri = new Uri("https://localhost:44302/api/player"),
+            Content = new StringContent(playerJson)
+        };
+
+        requestMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+        var response = await client.SendAsync(requestMessage);
+
+        var responseStatusCode = response.StatusCode;
+        var responseBody = await response.Content.ReadAsStringAsync();
+        NavigationManager.NavigateTo("/players");
+    }
+
+    private bool VerifyPlayer()
+    {
+        if (string.IsNullOrWhiteSpace(newPlayer.Firstname))
+        {
+            return false;
+        }
+
+        return true;
+    }
+}
+
+

@@ -1,0 +1,66 @@
+﻿@page "/addteam"
+@using LedGameDisplayFrontend.Data
+@using System.Net.Http
+@using System.Web
+@using System.Text.Json
+@inject NavigationManager NavigationManager
+
+<h1>Verein hinzufügen</h1>
+
+<p>Vereinsdetails</p>
+
+<input id="txtName" type="text" @bind="newTeam.Name" />
+<a>Name</a>
+<br />
+
+<input id="txtShortname" type="text" @bind="newTeam.Shortname" />
+<a>Abkürzung</a>
+<br />
+
+<input id="txtClubname" type="text" @bind="newTeam.Clubname" />
+<a>Vereinsname</a>
+<br />
+
+<button class="btn btn-primary" @onclick="SaveTeam">Speichern</button>
+
+@code {
+    private Team newTeam = new Team();
+
+
+    private async void SaveTeam()
+    {
+        HttpClient client = new HttpClient();
+
+        JsonSerializerOptions jso = new JsonSerializerOptions()
+        {
+            IgnoreNullValues = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
+        var teamJson = "";
+        using (var stream = new System.IO.MemoryStream())
+        {
+            await JsonSerializer.SerializeAsync<Team>(stream, newTeam, jso);
+            stream.Position = 0;
+            using var reader = new System.IO.StreamReader(stream);
+            teamJson = await reader.ReadToEndAsync();
+        }
+
+        var requestMessage = new HttpRequestMessage()
+        {
+            Method = new HttpMethod("POST"),
+            RequestUri = new Uri("https://localhost:44302/api/team"),
+            Content = new StringContent(teamJson)
+        };
+
+        requestMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+        var response = await client.SendAsync(requestMessage);
+
+        var responseStatusCode = response.StatusCode;
+        var responseBody = await response.Content.ReadAsStringAsync();
+        NavigationManager.NavigateTo("/teams");
+    }
+}
+
+
