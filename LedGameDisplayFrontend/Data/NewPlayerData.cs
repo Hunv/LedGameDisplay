@@ -2,17 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace LedGameDisplayFrontend.Data
 {
-    public class Player
+    public class NewPlayerData
     {
-        [Key]
-        public int Id { get; set; }
-
-        [Required(ErrorMessage ="Es muss ein Vorname angegeben werden")]
+        [Required(ErrorMessage = "Es muss ein Vorname angegeben werden")]
         [MaxLength(256, ErrorMessage = "Der Vorname muss höchstens aus 256 Zeichen bestehen.")]
         [MinLength(2, ErrorMessage = "Der Vorname muss mindestens aus zwei Zeichen bestehen.")]
         public string Firstname { get; set; }
@@ -33,7 +29,7 @@ namespace LedGameDisplayFrontend.Data
         [DisplayFormat(DataFormatString = "{0:dd.MM.yyyy}", ApplyFormatInEditMode = true)]
         [Range(typeof(DateTime), "01.01.1930", "01.01.2030", ErrorMessage = "Bitte ein plausibles Ablaufdatum des ärztlichen Attests angeben")]
         public DateTime HealthCertificationExpireDate { get; set; } = DateTime.Now;
-        
+
         [MaxLength(128)]
         public string RefereeLevel { get; set; }
 
@@ -45,6 +41,6 @@ namespace LedGameDisplayFrontend.Data
         public bool IsCaptain { get; set; }
         public bool IsViceCaptain { get; set; }
 
-        public Team Team { get; set; } = new Team();
+        public int TeamId { get; set; } = 0;
     }
 }

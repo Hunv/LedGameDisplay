@@ -6,6 +6,7 @@ using LedGameDisplayApi.DataModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Web;
+using LedGameDisplayApi.DataModel.JsonModel;
 
 namespace LedGameDisplayApi.Controllers
 {
@@ -23,7 +24,7 @@ namespace LedGameDisplayApi.Controllers
         [HttpGet]
         public IEnumerable<Tournament> GetTournament()
         {
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 var tournamentList = dbContext.Tournaments;
                 _logger.LogDebug("Got {0} tournaments", tournamentList.Count());
@@ -36,7 +37,7 @@ namespace LedGameDisplayApi.Controllers
         [HttpGet("{id}", Name = "GetTournament")]
         public Tournament GetTournament(int id)
         {
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 var tournament = dbContext.Tournaments.SingleOrDefault(x => x.Id == id);
                 if (tournament == null)
@@ -50,15 +51,23 @@ namespace LedGameDisplayApi.Controllers
         // POST: api/Tournament
         //Example Tournament String: {"name":"Schlickteufel Cup 2020","city":"Elmshorn","place":"Traglufthalle","date":"2019-03-28T00:00:00"}
         [HttpPost]
-        public void PostTournament([FromBody] Tournament value)
+        public void PostTournament([FromBody] NewTournamentData value)
         {
             value.City = HttpUtility.UrlDecode(value.City);
             value.Name = HttpUtility.UrlDecode(value.Name);
             value.Place = HttpUtility.UrlDecode(value.Place);
 
-            using (var dbContext = new MyDbContext())
+            var tournament = new Tournament()
             {
-                dbContext.Tournaments.Add(value);
+                City = value.City,
+                Name = value.Name,
+                Place = value.Place,
+                Date = value.Date
+            };
+
+            using (var dbContext = new DatabaseContext())
+            {
+                dbContext.Tournaments.Add(tournament);
                 var changeCount = dbContext.SaveChanges();
                 _logger.LogDebug("Added tournament by changing {0} datasets", changeCount);
             }
@@ -72,7 +81,7 @@ namespace LedGameDisplayApi.Controllers
             value.Name = HttpUtility.UrlDecode(value.Name);
             value.Place = HttpUtility.UrlDecode(value.Place);
 
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 var toUpdate = dbContext.Tournaments.SingleOrDefault(x => x.Id == id);
                 if (toUpdate == null)
@@ -92,7 +101,7 @@ namespace LedGameDisplayApi.Controllers
         [HttpDelete("{id}")]
         public void DeleteTournament(int id)
         {
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 var toRemove = dbContext.Tournaments.SingleOrDefault(x => x.Id == id);
                 if (toRemove == null)

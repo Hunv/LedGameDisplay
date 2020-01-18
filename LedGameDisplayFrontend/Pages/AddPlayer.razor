@@ -108,9 +108,8 @@ else
 }
 
 @code {
-    private Player newPlayer = new Player() { Team = new Team() };
+    private NewPlayerData newPlayer = new NewPlayerData();
     private Team[] teamList = new Team[0];
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -119,36 +118,7 @@ else
 
     private async void SavePlayer()
     {
-        HttpClient client = new HttpClient();
-
-        JsonSerializerOptions jso = new JsonSerializerOptions()
-        {
-            IgnoreNullValues = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
-
-        var playerJson = "";
-        using (var stream = new System.IO.MemoryStream())
-        {
-            await JsonSerializer.SerializeAsync<Player>(stream, newPlayer, jso);
-            stream.Position = 0;
-            using var reader = new System.IO.StreamReader(stream);
-            playerJson = await reader.ReadToEndAsync();
-        }
-
-        var requestMessage = new HttpRequestMessage()
-        {
-            Method = new HttpMethod("POST"),
-            RequestUri = new Uri("https://localhost:44302/api/player"),
-            Content = new StringContent(playerJson)
-        };
-
-        requestMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-
-        var response = await client.SendAsync(requestMessage);
-
-        var responseStatusCode = response.StatusCode;
-        var responseBody = await response.Content.ReadAsStringAsync();
+        await PanelApiService.NewPlayerAsync(newPlayer);
         NavigationManager.NavigateTo("/players");
     }
 

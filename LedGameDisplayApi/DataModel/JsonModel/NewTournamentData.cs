@@ -4,13 +4,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace LedGameDisplayFrontend.Data
+namespace LedGameDisplayApi.DataModel.JsonModel
 {
-    public class Tournament
+    public class NewTournamentData
     {
-        [Key]
-        public int Id { get; set; }
-
         [Required]
         [MaxLength(256, ErrorMessage = "Der Name kann höchstens aus 256 Zeichen bestehen.")]
         [MinLength(2, ErrorMessage = "Der Name muss mindestens aus zwei Zeichen bestehen.")]
@@ -30,7 +27,5 @@ namespace LedGameDisplayFrontend.Data
         [DisplayFormat(DataFormatString = "{0:dd.MM.yyyy}", ApplyFormatInEditMode = true)]
         [Range(typeof(DateTime), "01.01.2020", "01.01.2030", ErrorMessage = "Bitte ein plausibles Datum angeben")]
         public DateTime Date { get; set; }
-
-        public ICollection<Match> Matches { get; set; }
     }
 }

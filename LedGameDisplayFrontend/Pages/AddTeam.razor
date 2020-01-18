@@ -7,60 +7,38 @@
 
 <h1>Verein hinzufügen</h1>
 
-<p>Vereinsdetails</p>
+<EditForm Model="@newTeam" OnValidSubmit="@SaveTeam">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
-<input id="txtName" type="text" @bind="newTeam.Name" />
-<a>Name</a>
-<br />
+    <a>Name</a>
+    <InputText id="txtName" type="text" class="form-control" @bind-Value="newTeam.Name" />
+    <ValidationMessage For="@(() => newTeam.Name)" />
+    <br />
 
-<input id="txtShortname" type="text" @bind="newTeam.Shortname" />
-<a>Abkürzung</a>
-<br />
+    <a>Abkürzung</a>
+    <InputText id="txtShortname" type="text" class="form-control" @bind-Value="newTeam.Shortname" />
+    <ValidationMessage For="@(() => newTeam.Shortname)" />
+    <br />
 
-<input id="txtClubname" type="text" @bind="newTeam.Clubname" />
-<a>Vereinsname</a>
-<br />
+    <a>Vereinsname</a>
+    <InputText id="txtClubname" type="text" class="form-control" @bind-Value="newTeam.Clubname" />
+    <ValidationMessage For="@(() => newTeam.Clubname)" />
+    <br />
 
-<button class="btn btn-primary" @onclick="SaveTeam">Speichern</button>
+    <button class="btn btn-primary" type="submit">Speichern</button>
+</EditForm>
+    @*<button class="btn btn-primary" @onclick="SaveTeam">Speichern</button>*@
 
-@code {
-    private Team newTeam = new Team();
+    @code {
+        private NewTeamData newTeam = new NewTeamData();
 
 
-    private async void SaveTeam()
-    {
-        HttpClient client = new HttpClient();
-
-        JsonSerializerOptions jso = new JsonSerializerOptions()
+        private async void SaveTeam()
         {
-            IgnoreNullValues = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
-
-        var teamJson = "";
-        using (var stream = new System.IO.MemoryStream())
-        {
-            await JsonSerializer.SerializeAsync<Team>(stream, newTeam, jso);
-            stream.Position = 0;
-            using var reader = new System.IO.StreamReader(stream);
-            teamJson = await reader.ReadToEndAsync();
+            await PanelApiService.NewTeamAsync(newTeam);
+            NavigationManager.NavigateTo("/teams");
         }
-
-        var requestMessage = new HttpRequestMessage()
-        {
-            Method = new HttpMethod("POST"),
-            RequestUri = new Uri("https://localhost:44302/api/team"),
-            Content = new StringContent(teamJson)
-        };
-
-        requestMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-
-        var response = await client.SendAsync(requestMessage);
-
-        var responseStatusCode = response.StatusCode;
-        var responseBody = await response.Content.ReadAsStringAsync();
-        NavigationManager.NavigateTo("/teams");
     }
-}
 
 
