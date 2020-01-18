@@ -13,14 +13,18 @@
 }
 else
 {
+
+<EditForm Model="@newMatch" OnValidSubmit="@SaveMatch">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
     <a>Team1</a>
-    <br />
-    <select id="cmbTeam1" @bind="newMatch.Team1.Id">
+    <select id="cmbTeam1" class="form-control" @bind="@newMatch.Team1Id">
         <option selected value="0">-- Team auswählen --</option>
 
         @foreach (var team in teamList)
         {
-            @if (team.Id == newMatch.Team1.Id)
+            @if (team.Id == newMatch.Team1Id)
             {
                 <option selected value="@team.Id">@team.Name (@team.Clubname)</option>
             }
@@ -30,17 +34,15 @@ else
             }
         }
     </select>
-    <br />
     <br />
 
     <a>Team2</a>
-    <br />
-    <select id="cmbTeam2" @bind="newMatch.Team2.Id">
+    <select id="cmbTeam2" class="form-control" @bind="@newMatch.Team2Id">
         <option selected value="0">-- Team auswählen --</option>
 
         @foreach (var team in teamList)
         {
-            @if (team.Id == newMatch.Team2.Id)
+            @if (team.Id == newMatch.Team2Id)
             {
                 <option selected value="@team.Id">@team.Name (@team.Clubname)</option>
             }
@@ -51,62 +53,55 @@ else
         }
     </select>
     <br />
-    <br />
 
-    <a>Spiellänge (HH:MM:SS)</a>
-    <br />
-    <input id="txtLenght" type="text" @bind="newMatch.TimeLeft" />
-    <br />
+    <a>Halbzeitlänge (HH:MM:SS)</a>
+    <input id="txtLenght" class="form-control" type="text" @bind="Matchtime" />
     <br />
 
     <a>Geplante Startzeit</a>
-    <br />
-    <input id="txtPlannedStart" type="date" @bind="newMatch.StartPlaned" />
-    <br />
+    <InputDate id="txtPlannedStart" class="form-control" type="datetime" @bind-Value="newMatch.StartPlaned" />
     <br />
 
     <a>Haupt-Schiedsrichter</a>
-    <br />
-    <select id="txtReferee1">
+    <select id="txtReferee1" class="form-control" @bind="@Ref1Id">
+        <option value="0">--- Hauptschiedsrichter auswählen--- </option>
         @foreach (var referee in playerList)
         {
-            @if (referee.Id == newMatch.Referees.ElementAt(0).Id)
+            @if (newMatch.RefereeIds.Count >= 1 && referee.Id == newMatch.RefereeIds[0])
             {
                 <option selected value="@referee.Id">@referee.Firstname @referee.Lastname (@referee.Team.Clubname)</option>
             }
             else
             {
-    <option value="@referee.Id">@referee.Firstname @referee.Lastname (@referee.Team.Clubname)</option>
+                <option value="@referee.Id">@referee.Firstname @referee.Lastname (@referee.Team.Clubname)</option>
             }
         }
     </select>
-    <br />
     <br />
 
     <a>Schiedsrichter 2</a>
-    <br />
-    <select id="txtReferee2">
+    <select id="txtReferee2" class="form-control" @bind="@Ref2Id">
+        <option value="0">--- zweiten Schiedsrichter auswählen--- </option>
         @foreach (var referee in playerList)
         {
-            @if (referee.Id == newMatch.Referees.ElementAt(1).Id)
+            @if (newMatch.RefereeIds.Count >= 2 && referee.Id == newMatch.RefereeIds[1])
             {
-        <option selected value="@referee.Id">@referee.Firstname @referee.Lastname (@referee.Team.Clubname)</option>
+                <option selected value="@referee.Id">@referee.Firstname @referee.Lastname (@referee.Team.Clubname)</option>
             }
             else
             {
-    <option value="@referee.Id">@referee.Firstname @referee.Lastname (@referee.Team.Clubname)</option>
+                <option value="@referee.Id">@referee.Firstname @referee.Lastname (@referee.Team.Clubname)</option>
             }
         }
     </select>
-    <br />
     <br />
 
     <a>Schiedsrichter 3</a>
-    <br />
-    <select id="txtReferee3">
+    <select id="txtReferee3" class="form-control" @bind="@Ref3Id">
+        <option value="0">--- dritten Schiedsrichter auswählen--- </option>
         @foreach (var referee in playerList)
         {
-            @if (referee.Id == newMatch.Referees.ElementAt(2).Id)
+            @if (newMatch.RefereeIds.Count >= 3 && referee.Id == newMatch.RefereeIds[2])
             {
                 <option selected value="@referee.Id">@referee.Firstname @referee.Lastname (@referee.Team.Clubname)</option>
             }
@@ -116,33 +111,14 @@ else
             }
         }
     </select>
-    <br />
     <br />
 
     <a>Schiedsrichter 4</a>
-    <br />
-    <select id="txtReferee4">
+    <select id="txtReferee4" class="form-control" @bind="@Ref4Id">
+        <option value="0">--- vierten Schiedsrichter auswählen--- </option>
         @foreach (var referee in playerList)
         {
-            @if (referee.Id == newMatch.Referees.ElementAt(3).Id)
-            {
-        <option selected value="@referee.Id">@referee.Firstname @referee.Lastname (@referee.Team.Clubname)</option>
-            }
-            else
-            {
-                <option value="@referee.Id">@referee.Firstname @referee.Lastname (@referee.Team.Clubname)</option>
-            }
-        }
-    </select>
-    <br />
-    <br />
-
-    <a>Schiedsrichter 5</a>
-    <br />
-    <select id="txtReferee5">
-        @foreach (var referee in playerList)
-        {
-            @if (referee.Id == newMatch.Referees.ElementAt(4).Id)
+            @if (newMatch.RefereeIds.Count >= 4 && referee.Id == newMatch.RefereeIds[3])
             {
                 <option selected value="@referee.Id">@referee.Firstname @referee.Lastname (@referee.Team.Clubname)</option>
             }
@@ -153,44 +129,54 @@ else
         }
     </select>
     <br />
+
+    <a>Schiedsrichter 5</a>
+    <select id="txtReferee5" class="form-control" @bind="@Ref5Id">
+        <option value="0">--- fünften Schiedsrichter auswählen--- </option>
+        @foreach (var referee in playerList)
+        {
+            @if (newMatch.RefereeIds.Count >= 5 && referee.Id == newMatch.RefereeIds[4])
+            {
+                <option selected value="@referee.Id">@referee.Firstname @referee.Lastname (@referee.Team.Clubname)</option>
+            }
+            else
+            {
+                <option value="@referee.Id">@referee.Firstname @referee.Lastname (@referee.Team.Clubname)</option>
+            }
+        }
+    </select>
     <br />
 
-    <button class="btn btn-primary" @onclick="SaveMatch">Speichern</button>
-}
+    <button class="btn btn-primary" type="submit">Speichern</button>
+</EditForm>
+        }
 
-@code {
-    private Match newMatch = new Match() { Team1 = new Team(), Team2 = new Team() };
-    private Team[] teamList;
-    private string[] teamNameList { get { return new string[] { "A", "B" }; } }
-    private Player[] playerList;
+        @code {
+            private NewMatchData newMatch = new NewMatchData();
+            private Team[] teamList;
+            private Player[] playerList;
+            private TimeSpan Matchtime { get { return new TimeSpan(0, 0, newMatch.MatchtimeSeconds); } set { newMatch.MatchtimeSeconds = (int)value.TotalSeconds; } }
 
-    [Parameter]
-    public string tournamentIdStr { get { return tournamentId.ToString(); } set { tournamentId = Convert.ToInt32(value); } }
-    private int tournamentId;
+            private int Ref1Id { get { return newMatch.RefereeIds[0]; } set { newMatch.RefereeIds[0] = value; } }
+            private int Ref2Id { get { return newMatch.RefereeIds[1]; } set { newMatch.RefereeIds[1] = value; } }
+            private int Ref3Id { get { return newMatch.RefereeIds[2]; } set { newMatch.RefereeIds[2] = value; } }
+            private int Ref4Id { get { return newMatch.RefereeIds[3]; } set { newMatch.RefereeIds[3] = value; } }
+            private int Ref5Id { get { return newMatch.RefereeIds[4]; } set { newMatch.RefereeIds[4] = value; } }
 
-    protected override async Task OnInitializedAsync()
-    {
-        teamList = await PanelApiService.GetTeamsAsync();
-        playerList = await PanelApiService.GetPlayersAsync();
-    }
+            [Parameter]
+            public string tournamentIdStr { get { return tournamentId.ToString(); } set { tournamentId = Convert.ToInt32(value); } }
+            private int tournamentId;
 
-    private async void SaveMatch()
-    {
-        HttpClient client = new HttpClient();
+            protected override async Task OnInitializedAsync()
+            {
+                teamList = await PanelApiService.GetTeamsAsync();
+                playerList = await PanelApiService.GetPlayersAsync();
+                newMatch.TournamentId = tournamentId;
+            }
 
-        var requestMessage = new HttpRequestMessage()
-        {
-            Method = new HttpMethod("POST"),
-            RequestUri = new Uri("https://localhost:44302/api/match"),
-            Content = new StringContent("")
-        };
-
-        requestMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-
-        var response = await client.SendAsync(requestMessage);
-
-        var responseStatusCode = response.StatusCode;
-        var responseBody = await response.Content.ReadAsStringAsync();
-        NavigationManager.NavigateTo("/tournaments/" + tournamentIdStr);
-    }
-}
+            private async void SaveMatch()
+            {
+                await PanelApiService.NewMatchAsync(newMatch);
+                NavigationManager.NavigateTo("/tournaments/" + tournamentIdStr);
+            }
+        }

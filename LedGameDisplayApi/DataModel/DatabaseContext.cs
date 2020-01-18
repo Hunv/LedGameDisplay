@@ -7,13 +7,15 @@ using System.Threading.Tasks;
 
 namespace LedGameDisplayApi.DataModel
 {
-    public class MyDbContext : DbContext
+    public class DatabaseContext : Microsoft.EntityFrameworkCore.DbContext
     {
         public DbSet<Team> Teams { get; set; }
         public DbSet<Tournament> Tournaments { get; set; }
         public DbSet<Player> Players { get; set; }
         public DbSet<Match> Matches { get; set; }
         public DbSet<Penalty> Penalties { get; set; }
+        public DbSet<DbMatch2Player> DbMatch2Player { get; set; }
+        public DbSet<DbMatch2PlayerReferee> DbMatch2PlayerReferee { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -28,11 +30,34 @@ namespace LedGameDisplayApi.DataModel
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Map table names
+            modelBuilder.Entity<DbMatch2Player>().ToTable("DbMatch2Player", DbSettings.dbSchema);
+            modelBuilder.Entity<DbMatch2Player>(entity =>
+            {
+                entity.HasKey(mp => new { mp.PlayerId, mp.MatchId });
+                entity.HasOne(mp => mp.Player)
+                    .WithMany(m => m.MatchParticipations)
+                    .HasForeignKey(mp => mp.MatchId);
+                entity.HasOne(mp => mp.Match)
+                    .WithMany(p => p.Players)
+                    .HasForeignKey(mp => mp.PlayerId);
+            });
+
+            modelBuilder.Entity<DbMatch2PlayerReferee>().ToTable("DbMatch2PlayerReferee", DbSettings.dbSchema);
+            modelBuilder.Entity<DbMatch2PlayerReferee>(entity =>
+            {
+                entity.HasKey(mp => new { mp.RefereeId, mp.MatchId });
+                entity.HasOne(mp => mp.Referee)
+                    .WithMany(m => m.MatchReferee)
+                    .HasForeignKey(mp => mp.MatchId);
+                entity.HasOne(mp => mp.Match)
+                    .WithMany(p => p.Referees)
+                    .HasForeignKey(mp => mp.RefereeId);
+            });
+
             modelBuilder.Entity<Player>().ToTable("Players", DbSettings.dbSchema);
             modelBuilder.Entity<Player>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                //entity.HasOne(e => e.Team).WithMany(e => e.Players);
             });
 
             modelBuilder.Entity<Team>().ToTable("Teams", DbSettings.dbSchema);
@@ -52,10 +77,9 @@ namespace LedGameDisplayApi.DataModel
             modelBuilder.Entity<Match>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.HasMany(e => e.Team1Players);
-                entity.HasMany(e => e.Team2Players);
-                entity.HasMany(e => e.Referees);
                 entity.HasMany(e => e.Penalties).WithOne(e => e.Match);
+                entity.HasOne(e => e.Team1).WithMany(e => e.MatchesTeam1);
+                entity.HasOne(e => e.Team2).WithMany(e => e.MatchesTeam2);
             });
 
             modelBuilder.Entity<Tournament>().ToTable("Tournaments", DbSettings.dbSchema);

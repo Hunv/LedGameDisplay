@@ -2,16 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace LedGameDisplayFrontend.Data
+namespace LedGameDisplayApi.DataModel.JsonModel
 {
-    public class Team
+    public class NewTeamData
     {
-        [Key]
-        public int Id { get; set; }
-
         [Required]
         [MaxLength(128, ErrorMessage = "Der Nachname muss höchstens aus 128 Zeichen bestehen.")]
         [MinLength(2, ErrorMessage = "Der Nachname muss mindestens aus zwei Zeichen bestehen.")]
@@ -25,9 +21,7 @@ namespace LedGameDisplayFrontend.Data
         [Required]
         [MaxLength(256, ErrorMessage = "Der Vereinsname muss höchstens aus 256 Zeichen bestehen.")]
         [MinLength(2, ErrorMessage = "Der Vereinsname muss mindestens aus zwei Zeichen bestehen.")]
-        
-        public string Clubname { get; set; } = "";
 
-        public ICollection<Player> Players { get; set; } = new List<Player>();
+        public string Clubname { get; set; } = "";
     }
 }

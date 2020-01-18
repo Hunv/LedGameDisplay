@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace LedGameDisplayApi.DataModel
@@ -24,5 +25,11 @@ namespace LedGameDisplayApi.DataModel
         public string Clubname { get; set; }
 
         public ICollection<Player> Players { get; set; }
+
+        [JsonIgnore]
+        public ICollection<Match> MatchesTeam1 { get; set; }
+
+        [JsonIgnore]
+        public ICollection<Match> MatchesTeam2 { get; set; }
     }
 }

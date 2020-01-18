@@ -6,60 +6,40 @@
 
 <h1>Add Tournament</h1>
 
-<p>Tournament Details</p>
+<EditForm Model="@newTournament" OnValidSubmit="@SaveTournament">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
-<input id="txtName" type="text" @bind="newTournament.Name" />
-<a>Name</a>
-<br />
+    <a>Name</a>
+    <InputText id="txtName" type="text" class="form-control"  @bind-Value="newTournament.Name" />
+    <ValidationMessage For="@(() => newTournament.Name)" />
+    <br />
 
-<input id="txtDate" type="text" @bind="newTournament.Date" />
-<a>Datum</a>
-<br />
+    <a>Datum</a>
+    <InputDate id="txtDate" type="date" class="form-control"  @bind-Value="newTournament.Date" />
+    <ValidationMessage For="@(() => newTournament.Date)" />
+    <br />
 
-<input id="txtCity" type="text" @bind="newTournament.City" />
-<a>Stadt</a>
-<br />
+    <a>Stadt</a>
+    <InputText id="txtCity" type="text" class="form-control"  @bind-Value="newTournament.City" />
+    <ValidationMessage For="@(() => newTournament.City)" />
+    <br />
 
-<input id="txtPlace" type="text" @bind="newTournament.Place" />
-<a>Einrichtung (Name der Schwimmhalle, Sportplatz, ...)</a>
-<br />
+    <a>Einrichtung (Name der Schwimmhalle, Sportplatz, ...)</a>
+    <InputText id="txtPlace" type="text" class="form-control"  @bind-Value="newTournament.Place" />
+    <ValidationMessage For="@(() => newTournament.Place)" />
+    <br />
+    <button class="btn btn-primary" type="submit">Speichern</button>
+</EditForm>
 
-<button class="btn btn-primary" @onclick="SaveTournament">Speichern</button>
+    @*<button class="btn btn-primary" @onclick="SaveTournament">Speichern</button>*@
 
 @code {
-    private Tournament newTournament = new Tournament();
-
-    private void NewTournament()
-    {
-
-    }
+    private NewTournamentData newTournament = new NewTournamentData();
 
     private async void SaveTournament()
     {
-        HttpClient client = new HttpClient();
-
-        var requestMessage = new HttpRequestMessage()
-        {
-            Method = new HttpMethod("POST"),
-            RequestUri = new Uri("https://localhost:44302/api/tournament"),
-            Content =
-                new StringContent(string.Format(
-                    "{{\"name\":\"{0}\",\"city\":\"{1}\",\"place\":\"{2}\",\"date\":\"{3}\"}}",
-                    HttpUtility.UrlEncode(newTournament.Name, System.Text.Encoding.Default),
-                    HttpUtility.UrlEncode(newTournament.City, System.Text.Encoding.Default),
-                    HttpUtility.UrlEncode(newTournament.Place, System.Text.Encoding.Default),
-                    newTournament.Date.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss")
-                    ))
-        };
-
-        requestMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-
-        var response = await client.SendAsync(requestMessage);
-
-        var responseStatusCode = response.StatusCode;
-        var responseBody = await response.Content.ReadAsStringAsync();
+        await PanelApiService.NewTournamentAsync(newTournament);
         NavigationManager.NavigateTo("/tournaments");
     }
 }
-
-

@@ -26,7 +26,7 @@ namespace LedGameDisplayApi.DataModel
             if (File.Exists(dbFilename))
                 return;
 
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 //Ensure database is created
                 dbContext.Database.EnsureCreated();

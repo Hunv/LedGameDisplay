@@ -27,29 +27,23 @@ namespace LedGameDisplayApi.DataModel
         public string Sex { get; set; }
 
         public DateTime HealthCertificationExpireDate { get; set; }
-        
+
         [MaxLength(128)]
         public string RefereeLevel { get; set; }
         public DateTime RefereeLevelExpireDate { get; set; }
-        
+
         public bool IsActive { get; set; }
         public bool IsCaptain { get; set; }
         public bool IsViceCaptain { get; set; }
 
-        [JsonIgnore]        
-        [NotMapped]
-        public int TeamId 
-        { 
-            get { return Team == null ? 0 : Team.Id; } 
-            set 
-            {
-                using (var dbContext = new MyDbContext())
-                {
-                    Team = dbContext.Teams.SingleOrDefault(x => x.Id == value);
-                }
-            } 
-        }
-
         public Team Team { get; set; }
+
+        public DateTime Created { get; set; }
+
+        [JsonIgnore]
+        public ICollection<DbMatch2Player> MatchParticipations { get; set; }
+        
+        [JsonIgnore]
+        public ICollection<DbMatch2PlayerReferee> MatchReferee { get; set; }
     }
 }

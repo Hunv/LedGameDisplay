@@ -4,9 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using LedGameDisplayApi.DataModel;
+using LedGameDisplayApi.DataModel.JsonModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace LedGameDisplayApi.Controllers
 {
@@ -23,13 +26,24 @@ namespace LedGameDisplayApi.Controllers
 
         // GET: api/Player
         [HttpGet]
-        public IEnumerable<Player> GetPlayer()
+        public IActionResult GetPlayer()
         {
-            using (var dbContext = new MyDbContext())
+            using (var DatabaseContext = new DatabaseContext())
             {
-                var playerList = dbContext.Players;
+                var playerList = DatabaseContext.Players.Include("Team").ToArray();
 
-                return (playerList).ToArray();
+                var js = new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    NullValueHandling = NullValueHandling.Ignore,
+                    DefaultValueHandling = DefaultValueHandling.Ignore,
+                    StringEscapeHandling = StringEscapeHandling.EscapeHtml
+                };
+                var json = JsonConvert.SerializeObject(playerList, js);
+                var result = new OkObjectResult(json);
+                
+
+                return result;
             }
         }
 
@@ -37,9 +51,9 @@ namespace LedGameDisplayApi.Controllers
         [HttpGet("{id}", Name = "GetPlayer")]
         public Player GetPlayer(int id)
         {
-            using (var dbContext = new MyDbContext())
+            using (var DatabaseContext = new DatabaseContext())
             {
-                var player = dbContext.Players.SingleOrDefault(x => x.Id == id);
+                var player = DatabaseContext.Players.SingleOrDefault(x => x.Id == id);
                 if (player == null)
                     _logger.LogDebug("Player {0} not found", id);
                 else
@@ -50,15 +64,31 @@ namespace LedGameDisplayApi.Controllers
 
         // POST: api/Player
         [HttpPost]
-        public void PostPlayer([FromBody] Player value)
+        public void PostPlayer([FromBody] NewPlayerData value)
         {
             value.Firstname = HttpUtility.UrlDecode(value.Firstname);
             value.Lastname = HttpUtility.UrlDecode(value.Lastname);
 
-            using (var dbContext = new MyDbContext())
+            using (var DatabaseContext = new DatabaseContext())
             {
-                dbContext.Players.Add(value);
-                var changeCount = dbContext.SaveChanges();
+                var newPlayer = new Player()
+                {
+                    Birthday = value.Birthday,
+                    Firstname = value.Firstname,
+                    Lastname = value.Lastname,
+                    IsActive = value.IsActive,
+                    IsCaptain = value.IsCaptain,
+                    IsViceCaptain = value.IsViceCaptain,
+                    HealthCertificationExpireDate = value.HealthCertificationExpireDate,
+                    RefereeLevel = value.RefereeLevel,
+                    RefereeLevelExpireDate = value.RefereeLevelExpireDate,
+                    Sex = value.Sex,
+                    Team = DatabaseContext.Teams.Single(x => x.Id == value.TeamId),
+                    Created = DateTime.Now
+                };
+
+                DatabaseContext.Players.Add(newPlayer);
+                var changeCount = DatabaseContext.SaveChanges();
                 _logger.LogDebug("Added player by changing {0} datasets", changeCount);
             }
         }
@@ -70,9 +100,9 @@ namespace LedGameDisplayApi.Controllers
             value.Firstname = HttpUtility.UrlDecode(value.Firstname);
             value.Lastname = HttpUtility.UrlDecode(value.Lastname);
 
-            using (var dbContext = new MyDbContext())
+            using (var DatabaseContext = new DatabaseContext())
             {
-                var toUpdate = dbContext.Players.SingleOrDefault(x => x.Id == id);
+                var toUpdate = DatabaseContext.Players.SingleOrDefault(x => x.Id == id);
                 if (toUpdate == null)
                 {
                     _logger.LogWarning("Player {0} not found to update.", id);
@@ -81,7 +111,7 @@ namespace LedGameDisplayApi.Controllers
 
                 toUpdate = value;
 
-                var changeCount = dbContext.SaveChanges();
+                var changeCount = DatabaseContext.SaveChanges();
                 _logger.LogDebug("Changed player {0} by changing {1} datasets", id, changeCount);
             }
         }
@@ -90,17 +120,17 @@ namespace LedGameDisplayApi.Controllers
         [HttpDelete("{id}")]
         public void DeletePlayer(int id)
         {
-            using (var dbContext = new MyDbContext())
+            using (var DatabaseContext = new DatabaseContext())
             {
-                var toRemove = dbContext.Players.SingleOrDefault(x => x.Id == id);
+                var toRemove = DatabaseContext.Players.SingleOrDefault(x => x.Id == id);
                 if (toRemove == null)
                 {
                     _logger.LogWarning("Player {0} not found to remove.", id);
                     return;
                 }
 
-                dbContext.Players.Remove(toRemove);
-                var changeCount = dbContext.SaveChanges();
+                DatabaseContext.Players.Remove(toRemove);
+                var changeCount = DatabaseContext.SaveChanges();
                 _logger.LogDebug("Deleted player {0} by changing {1} datasets", id, changeCount);
             }
         }

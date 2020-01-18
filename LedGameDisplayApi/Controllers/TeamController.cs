@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using LedGameDisplayApi.DataModel;
+using LedGameDisplayApi.DataModel.JsonModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -25,7 +26,7 @@ namespace LedGameDisplayApi.Controllers
         [HttpGet]
         public IEnumerable<Team> GetTeam()
         {
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 var teamList = dbContext.Teams;
 
@@ -37,7 +38,7 @@ namespace LedGameDisplayApi.Controllers
         [HttpGet("{id}", Name = "GetTeam")]
         public Team GetTeam(int id)
         {
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 var team = dbContext.Teams.SingleOrDefault(x => x.Id == id);
                 if (team == null)
@@ -50,15 +51,22 @@ namespace LedGameDisplayApi.Controllers
 
         // POST: api/Team
         [HttpPost]
-        public void PostTeam([FromBody] Team value)
+        public void PostTeam([FromBody] NewTeamData value)
         {
             value.Name = HttpUtility.UrlDecode(value.Name);
             value.Clubname = HttpUtility.UrlDecode(value.Clubname);
             value.Shortname = HttpUtility.UrlDecode(value.Shortname);
 
-            using (var dbContext = new MyDbContext())
+            var team = new Team()
             {
-                dbContext.Teams.Add(value);
+                Clubname = value.Clubname,
+                Name = value.Name,
+                Shortname = value.Shortname
+            };
+
+            using (var dbContext = new DatabaseContext())
+            {
+                dbContext.Teams.Add(team);
                 var changeCount = dbContext.SaveChanges();
                 _logger.LogDebug("Added team by changing {0} datasets", changeCount);
             }
@@ -72,7 +80,7 @@ namespace LedGameDisplayApi.Controllers
             value.Clubname = HttpUtility.UrlDecode(value.Clubname);
             value.Shortname = HttpUtility.UrlDecode(value.Shortname);
 
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 var toUpdate = dbContext.Teams.SingleOrDefault(x => x.Id == id);
                 if (toUpdate == null)
@@ -92,7 +100,7 @@ namespace LedGameDisplayApi.Controllers
         [HttpDelete("{id}")]
         public void DeleteTeam(int id)
         {
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 var toRemove = dbContext.Teams.SingleOrDefault(x => x.Id == id);
                 if (toRemove == null)

@@ -14,13 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Config\Characters\Default\5x5\" />
-    <Folder Include="Config\Characters\Default\6x10\" />
-    <Folder Include="Config\Characters\Default\11x15\" />
-    <Folder Include="Config\Characters\Default\6x12\" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <None Update="Config\Characters\Default\11x15\0.char">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Config\Characters\Default\22x29\0.char">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Config\Characters\Default\3x5\0.char">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -91,6 +90,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Config\Characters\Default\4x5\colon.char">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Config\Characters\Default\5x5\0.char">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Config\Characters\Default\6x10\0.char">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Config\Characters\Default\6x12\0.char">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Config\Characters\Default\8x10\0.char">

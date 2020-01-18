@@ -25,7 +25,7 @@ namespace LedGameDisplayApi.Controllers
         [HttpGet]
         public IEnumerable<Penalty> GetPenalty()
         {
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 var penaltyList = dbContext.Penalties;
 
@@ -37,7 +37,7 @@ namespace LedGameDisplayApi.Controllers
         [HttpGet("{id}", Name = "GetPenalty")]
         public Penalty GetPenalty(int id)
         {
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 var penalty = dbContext.Penalties.SingleOrDefault(x => x.Id == id);
                 if (penalty == null)
@@ -52,7 +52,7 @@ namespace LedGameDisplayApi.Controllers
         [HttpPost]
         public void PostPenalty([FromBody] Penalty value)
         {
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 dbContext.Penalties.Add(value);
                 var changeCount = dbContext.SaveChanges();
@@ -64,7 +64,7 @@ namespace LedGameDisplayApi.Controllers
         [HttpPut("{id}")]
         public void PutPenalty(int id, [FromBody] Penalty value)
         {
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 var toUpdate = dbContext.Penalties.SingleOrDefault(x => x.Id == id);
                 if (toUpdate == null)
@@ -84,7 +84,7 @@ namespace LedGameDisplayApi.Controllers
         [HttpDelete("{id}")]
         public void DeletePenalty(int id)
         {
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 var toRemove = dbContext.Penalties.SingleOrDefault(x => x.Id == id);
                 if (toRemove == null)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using LedGameDisplayApi.DataModel;
+using LedGameDisplayApi.DataModel.JsonModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -24,7 +25,7 @@ namespace LedGameDisplayApi.Controllers
         [HttpGet]
         public IEnumerable<Match> GetMatch()
         {
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 var matchList = dbContext.Matches;
 
@@ -36,7 +37,7 @@ namespace LedGameDisplayApi.Controllers
         [HttpGet("{id}", Name = "GetMatch")]
         public Match GetMatch(int id)
         {
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 var match = dbContext.Matches.SingleOrDefault(x => x.Id == id);
                 if (match == null)
@@ -49,11 +50,33 @@ namespace LedGameDisplayApi.Controllers
 
         // POST: api/Match
         [HttpPost]
-        public void PostMatch([FromBody] Match value)
+        public void PostMatch([FromBody] NewMatchData value)
         {
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
-                dbContext.Matches.Add(value);
+                var match = new Match()
+                {
+                    StartPlaned = value.StartPlaned,
+                    Team1 = dbContext.Teams.Single(x => x.Id == value.Team1Id),
+                    Team2 = dbContext.Teams.Single(x => x.Id == value.Team2Id),
+                    Referees = new List<DbMatch2PlayerReferee>(),
+                    TimeLeft = value.TimeLeft,
+                    Tournament = dbContext.Tournaments.Single(x => x.Id == value.TournamentId)
+                };
+
+                foreach (var aRef in value.RefereeIds)
+                {
+                    if (aRef == 0) continue;
+
+                    var a = new DbMatch2PlayerReferee()
+                    {
+                        Referee = dbContext.Players.Single(x => x.Id == aRef),
+                        Match = match
+                    };
+                    match.Referees.Add(a);
+                }
+
+                dbContext.Matches.Add(match);
                 var changeCount = dbContext.SaveChanges();
                 _logger.LogDebug("Added match by changing {0} datasets", changeCount);
             }
@@ -63,7 +86,7 @@ namespace LedGameDisplayApi.Controllers
         [HttpPut("{id}")]
         public void PutMatch(int id, [FromBody] Match value)
         {
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 var toUpdate = dbContext.Matches.SingleOrDefault(x => x.Id == id);
                 if (toUpdate == null)
@@ -83,7 +106,7 @@ namespace LedGameDisplayApi.Controllers
         [HttpDelete("{id}")]
         public void DeleteMatch(int id)
         {
-            using (var dbContext = new MyDbContext())
+            using (var dbContext = new DatabaseContext())
             {
                 var toRemove = dbContext.Matches.SingleOrDefault(x => x.Id == id);
                 if (toRemove == null)
