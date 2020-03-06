@@ -65,7 +65,7 @@ namespace LedGameDisplayLibrary
         /// <summary>
         /// The Settings for the WS281X Controller
         /// </summary>
-        private static Settings Settings {get;set;}
+        private static Settings ControllerSettings {get;set;}
 
         /// <summary>
         /// The Controller for the WS281X Library
@@ -101,10 +101,12 @@ namespace LedGameDisplayLibrary
         {
             LoadLayout(layoutName);
             LoadCharacters();
+         
+            Console.WriteLine("Initializing Controller for {0} with {1} LEDs on PWM0", layoutName, LedCount);
 
-            Settings = Settings.CreateDefaultSettings(); //800kHz and DMA Channel 10
-            Controller = Settings.AddController(ControllerType.PWM0, LedCount, StripType.WS2812_STRIP, LayoutConfig.Brightness, false);
-            WS281X = new WS281x(Settings);
+            ControllerSettings = Settings.CreateDefaultSettings(); //800kHz and DMA Channel 10
+            Controller = ControllerSettings.AddController(ControllerType.PWM0, LedCount, StripType.WS2812_STRIP, LayoutConfig.Brightness, false);
+            WS281X = new WS281x(ControllerSettings);
         }
 
         public static void LoadLayout(string layoutName)

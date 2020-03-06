@@ -1,10 +1,10 @@
 ﻿{
-	"name":"90x60",
-	"width":90,
+	"name":"96x60",
+	"width":96,
 	"height":60,
 	"characterset": "Default",
 	"hardareaborders": true,
-	"brightness": 120,
+	"brightness": 50,
 	"arealist": [
 		{
 			"name": "team1name",

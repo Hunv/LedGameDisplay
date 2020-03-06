@@ -43,10 +43,10 @@ namespace LedGameDisplayTestApp
                 Console.Write("What is your choice: ");
                 input = int.Parse(Console.ReadLine());
 
+                Display.Initialize("96x60");
+
                 if (input != 4)
                 {
-                    Display.Initialize("60x10");
-
                     var effect = GetEffect(input);
                     if (effect != null)
                     {
