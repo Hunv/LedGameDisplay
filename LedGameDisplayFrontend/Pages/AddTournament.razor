@@ -1,5 +1,6 @@
 ﻿@page "/addtournament"
 @using LedGameDisplayFrontend.Data
+@using LedGameDisplayFrontend.Data.JsonModel
 @using System.Net.Http
 @using System.Web
 @inject NavigationManager NavigationManager
@@ -11,28 +12,28 @@
     <ValidationSummary />
 
     <a>Name</a>
-    <InputText id="txtName" type="text" class="form-control"  @bind-Value="newTournament.Name" />
+    <InputText id="txtName" type="text" class="form-control" @bind-Value="newTournament.Name" />
     <ValidationMessage For="@(() => newTournament.Name)" />
     <br />
 
     <a>Datum</a>
-    <InputDate id="txtDate" type="date" class="form-control"  @bind-Value="newTournament.Date" />
+    <InputDate id="txtDate" type="date" class="form-control" @bind-Value="newTournament.Date" />
     <ValidationMessage For="@(() => newTournament.Date)" />
     <br />
 
     <a>Stadt</a>
-    <InputText id="txtCity" type="text" class="form-control"  @bind-Value="newTournament.City" />
+    <InputText id="txtCity" type="text" class="form-control" @bind-Value="newTournament.City" />
     <ValidationMessage For="@(() => newTournament.City)" />
     <br />
 
     <a>Einrichtung (Name der Schwimmhalle, Sportplatz, ...)</a>
-    <InputText id="txtPlace" type="text" class="form-control"  @bind-Value="newTournament.Place" />
+    <InputText id="txtPlace" type="text" class="form-control" @bind-Value="newTournament.Place" />
     <ValidationMessage For="@(() => newTournament.Place)" />
     <br />
     <button class="btn btn-primary" type="submit">Speichern</button>
 </EditForm>
 
-    @*<button class="btn btn-primary" @onclick="SaveTournament">Speichern</button>*@
+@*<button class="btn btn-primary" @onclick="SaveTournament">Speichern</button>*@
 
 @code {
     private NewTournamentData newTournament = new NewTournamentData();

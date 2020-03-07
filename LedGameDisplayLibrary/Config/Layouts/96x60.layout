@@ -1,10 +1,12 @@
 ﻿{
-	"name":"96x60",
-	"width":96,
-	"height":60,
+	"name": "96x60",
+	"width": 96,
+	"height": 60,
 	"characterset": "Default",
 	"hardareaborders": true,
-	"brightness": 50,
+	"brightness": 1,
+	"dmachannel": 5,
+	"frequency": 800000,
 	"arealist": [
 		{
 			"name": "team1name",
@@ -43,24 +45,25 @@
 		},
 		{
 			"name": "team1penalties",
-			"positionX": 2,
+			"positionX": 0,
 			"positionY": 31,
-			"width": 16,
+			"width": 18,
 			"height": 29
 		},
 		{
 			"name": "team2penalties",
 			"positionX": 72,
 			"positionY": 31,
-			"width": 16,
+			"width": 18,
 			"height": 29
 		},
 		{
 			"name": "time",
-			"positionX": 20,
-			"positionY": 31,
-			"width": 50,
-			"height": 15
+			"positionX": 19,
+			"positionY": 32,
+			"width": 52,
+			"height": 15,
+			"align": "center"
 		},
 		{
 			"name": "text",

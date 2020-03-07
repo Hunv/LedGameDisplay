@@ -6,7 +6,9 @@ using LedGameDisplayApi.DataModel;
 using LedGameDisplayApi.DataModel.JsonModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace LedGameDisplayApi.Controllers
 {
@@ -35,16 +37,33 @@ namespace LedGameDisplayApi.Controllers
 
         // GET: api/Match/5
         [HttpGet("{id}", Name = "GetMatch")]
-        public Match GetMatch(int id)
+        public IActionResult GetMatch(int id)
         {
             using (var dbContext = new DatabaseContext())
             {
-                var match = dbContext.Matches.SingleOrDefault(x => x.Id == id);
+                var match = dbContext.Matches
+                    .Include("Team1")
+                    .Include("Team2")
+                    .Include("Players")
+                    .Include("Referees")
+                    .Include("Penalties")
+                    .SingleOrDefault(x => x.Id == id);
+
                 if (match == null)
-                    _logger.LogDebug("Matches {0} not found", id);
+                    _logger.LogDebug("Match {0} not found", id);
                 else
                     _logger.LogDebug("Got match {0}", id);
-                return match;
+
+                var js = new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    NullValueHandling = NullValueHandling.Ignore,
+                    DefaultValueHandling = DefaultValueHandling.Ignore,
+                    StringEscapeHandling = StringEscapeHandling.EscapeHtml
+                };
+                var json = JsonConvert.SerializeObject(match, js);
+                var result = new OkObjectResult(json);
+                return result;
             }
         }
 
@@ -60,7 +79,8 @@ namespace LedGameDisplayApi.Controllers
                     Team1 = dbContext.Teams.Single(x => x.Id == value.Team1Id),
                     Team2 = dbContext.Teams.Single(x => x.Id == value.Team2Id),
                     Referees = new List<DbMatch2PlayerReferee>(),
-                    TimeLeft = value.TimeLeft,
+                    HalfTimeAmount = value.HalfTimeAmount,
+                    HalfTimeTime = new TimeSpan(0, 0, value.HalfTimeSeconds),
                     Tournament = dbContext.Tournaments.Single(x => x.Id == value.TournamentId)
                 };
 
@@ -84,7 +104,7 @@ namespace LedGameDisplayApi.Controllers
 
         // PUT: api/Match/5
         [HttpPut("{id}")]
-        public void PutMatch(int id, [FromBody] Match value)
+        public void PutMatch(int id, [FromBody] UpdateMatchOngoing value)
         {
             using (var dbContext = new DatabaseContext())
             {
@@ -95,7 +115,11 @@ namespace LedGameDisplayApi.Controllers
                     return;
                 }
 
-                toUpdate = value;
+                toUpdate.CurrentHalfTime = value.CurrentHalfTime;
+                toUpdate.CurrentTimeLeft = value.CurrentTimeLeft;
+                toUpdate.ScoreTeam1 = value.ScoreTeam1;
+                toUpdate.ScoreTeam2 = value.ScoreTeam2;
+                toUpdate.StartActual = value.StartActual;
 
                 var changeCount = dbContext.SaveChanges();
                 _logger.LogDebug("Changed match {0} by changing {1} datasets", id, changeCount);

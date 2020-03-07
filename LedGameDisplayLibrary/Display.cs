@@ -102,11 +102,14 @@ namespace LedGameDisplayLibrary
             LoadLayout(layoutName);
             LoadCharacters();
          
-            Console.WriteLine("Initializing Controller for {0} with {1} LEDs on PWM0", layoutName, LedCount);
-
-            ControllerSettings = Settings.CreateDefaultSettings(); //800kHz and DMA Channel 10
+            Console.WriteLine("Initializing Controller for {0} with {1} LEDs on PWM0, DMA Channel {2} and a Frequency of {3}Hz", layoutName, LedCount, LayoutConfig.DmaChannel, LayoutConfig.Frequency);
+            
+            //ControllerSettings = Settings.CreateDefaultSettings(); //800kHz and DMA Channel 10
+            ControllerSettings = new Settings(LayoutConfig.Frequency, LayoutConfig.DmaChannel); //Using DMA Channel 10 limits the number of LEDs to 400 on a Raspberry Pi 3b. Don't know why
             Controller = ControllerSettings.AddController(ControllerType.PWM0, LedCount, StripType.WS2812_STRIP, LayoutConfig.Brightness, false);
             WS281X = new WS281x(ControllerSettings);
+
+            SetAll(Color.Black);
         }
 
         public static void LoadLayout(string layoutName)
@@ -208,28 +211,79 @@ namespace LedGameDisplayLibrary
             var posX = area.PositionX;
             var posY = area.PositionY;
 
-            var charSet = CharacterSets.Single(x => x.Name == (characterSet ?? CharacterSet));
+            var matchingCharSets = CharacterSets.Where(x => x.Name == (characterSet ?? CharacterSet));
+            matchingCharSets = matchingCharSets.Where(x => x.Height <= area.Height).OrderByDescending(x => x.Height).ThenByDescending(x => x.Width);
+            var charSet = matchingCharSets.First();
 
-            foreach (var aChar in text.ToCharArray())
+            Console.WriteLine("Writing string {0} in area {1} using charSet {2}", text, area.Name, charSet.Name + "(" + charSet.Width + "x" + charSet.Height + ")");
+
+            //Flush Area
+            for (int x = area.PositionX; x < area.PositionX + area.Width; x++)
             {
-                var charObj = charSet.Characters.SingleOrDefault(x => x.Char == aChar);
-
-                for (int x = 0; x < charObj.Width; x++)
+                for (int y = area.PositionY; y < area.PositionY + area.Height; y++)
                 {
-                    for (int y = 0; y < charObj.Height; y++)
-                    {
-                        //If the Area Borders are hard and content should be cut off, don't show pixels out of area.
-                        if (LayoutConfig.HardAreaBorders && (x > area.Width || y > area.Height))
-                            continue;
-
-                        var ledNum = GetLedNumber(posX + x, posY + y);
-                        //Console.WriteLine("Setting X={0}/{1} and Y={2}/{3} with LED Number {4}", area.PositionX, x, area.PositionY, y, ledNum);
-
-                        SetLed(ledNum, charObj.Pixels[x, y]);
-                    }
+                    Display.SetLed(Display.GetLedNumber(x, y), Color.Black);
                 }
+            }
 
-                posX += charObj.Width + 1;
+            //Set the new text
+            if (area.Align == "left")
+            {
+                foreach (var aChar in text.ToCharArray())
+                {
+                    var charObj = charSet.Characters.SingleOrDefault(x => x.Char == aChar);
+
+                    for (int x = 0; x < charObj.Width; x++)
+                    {
+                        for (int y = 0; y < charObj.Height; y++)
+                        {
+                            //If the Area Borders are hard and content should be cut off, don't show pixels out of area.
+                            if (LayoutConfig.HardAreaBorders && (posX + x > area.Width + area.PositionX || posY + y > area.Height + area.PositionY))
+                                continue;
+
+                            var ledNum = GetLedNumber(posX + x, posY + y);
+                            //Console.WriteLine("Setting X={0}/{1} and Y={2}/{3} with LED Number {4}", area.PositionX, x, area.PositionY, y, ledNum);
+
+                            SetLed(ledNum, charObj.Pixels[x, y]);
+                        }
+                    }
+
+                    posX += charObj.Width + 1;
+                }
+            }
+            else if (area.Align == "center")
+            {
+                //Get the width of the string
+                var textWidth = 0;
+                foreach (var aChar in text.ToCharArray())
+                {
+                    textWidth += charSet.Characters.SingleOrDefault(x => x.Char == aChar).Width;
+                    textWidth++;
+                }
+                textWidth--; //Substract the tailing character space
+
+                //Set the new text centered
+                foreach (var aChar in text.ToCharArray())
+                {
+                    var charObj = charSet.Characters.SingleOrDefault(x => x.Char == aChar);
+
+                    for (int x = 0; x < charObj.Width; x++)
+                    {
+                        for (int y = 0; y < charObj.Height; y++)
+                        {
+                            //If the Area Borders are hard and content should be cut off, don't show pixels out of area.
+                            if (LayoutConfig.HardAreaBorders && (posX + x > area.Width + area.PositionX || posY + y > area.Height + area.PositionY))
+                                continue;
+
+                            var ledNum = GetLedNumber(posX + x, posY + y);
+                            //Console.WriteLine("Setting X={0}/{1} and Y={2}/{3} with LED Number {4}", area.PositionX, x, area.PositionY, y, ledNum);
+
+                            SetLed(ledNum, charObj.Pixels[x, y]);
+                        }
+                    }
+
+                    posX += charObj.Width + 1;
+                }
             }
             Render();
         }

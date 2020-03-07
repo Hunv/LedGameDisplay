@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Web;
 using LedGameDisplayApi.DataModel.JsonModel;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace LedGameDisplayApi.Controllers
 {
@@ -22,29 +24,53 @@ namespace LedGameDisplayApi.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<Tournament> GetTournament()
+        public IActionResult GetTournament()
         {
             using (var dbContext = new DatabaseContext())
             {
-                var tournamentList = dbContext.Tournaments;
+                var tournamentList = dbContext.Tournaments.Include("Matches");
+
+                var js = new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    NullValueHandling = NullValueHandling.Ignore,
+                    DefaultValueHandling = DefaultValueHandling.Ignore,
+                    StringEscapeHandling = StringEscapeHandling.EscapeHtml
+                };
+                var json = JsonConvert.SerializeObject(tournamentList, js);
+                var result = new OkObjectResult(json);
+
                 _logger.LogDebug("Got {0} tournaments", tournamentList.Count());
-                return (tournamentList).ToArray();
+                return result;
             }
         }
 
 
         // GET: api/Tournament/5
         [HttpGet("{id}", Name = "GetTournament")]
-        public Tournament GetTournament(int id)
+        public IActionResult GetTournament(int id)
         {
             using (var dbContext = new DatabaseContext())
             {
-                var tournament = dbContext.Tournaments.SingleOrDefault(x => x.Id == id);
+                var tournament = dbContext.Tournaments.Include("Matches").Include("Matches.Team1").Include("Matches.Team2").SingleOrDefault(x => x.Id == id);
                 if (tournament == null)
                     _logger.LogDebug("Tournament {0} not found", id);
                 else
                     _logger.LogDebug("Got tournament {0}", id);
-                return tournament;
+
+
+                var js = new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    NullValueHandling = NullValueHandling.Ignore,
+                    DefaultValueHandling = DefaultValueHandling.Ignore,
+                    StringEscapeHandling = StringEscapeHandling.EscapeHtml
+                };
+                var json = JsonConvert.SerializeObject(tournament, js);
+                var result = new OkObjectResult(json);
+
+
+                return result;
             }
         }
 

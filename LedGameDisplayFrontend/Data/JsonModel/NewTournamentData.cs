@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace LedGameDisplayFrontend.Data
+namespace LedGameDisplayFrontend.Data.JsonModel
 {
     public class NewTournamentData
     {
