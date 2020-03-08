@@ -208,8 +208,6 @@ namespace LedGameDisplayLibrary
         public static void ShowString(string text, string areaName = null, string characterSet = null)
         {
             var area = areaName == null ? new Area() {Width = X, Height = Y} : LayoutConfig.AreaList.Single(x => x.Name == areaName);
-            var posX = area.PositionX;
-            var posY = area.PositionY;
 
             var matchingCharSets = CharacterSets.Where(x => x.Name == (characterSet ?? CharacterSet));
             matchingCharSets = matchingCharSets.Where(x => x.Height <= area.Height).OrderByDescending(x => x.Height).ThenByDescending(x => x.Width);
@@ -229,6 +227,9 @@ namespace LedGameDisplayLibrary
             //Set the new text
             if (area.Align == "left")
             {
+                var posX = area.PositionX;
+                var posY = area.PositionY;
+
                 foreach (var aChar in text.ToCharArray())
                 {
                     var charObj = charSet.Characters.SingleOrDefault(x => x.Char == aChar);
@@ -262,6 +263,10 @@ namespace LedGameDisplayLibrary
                 }
                 textWidth--; //Substract the tailing character space
 
+                //Move the current write-position to the centered position
+                var posX = area.Width / 2 - textWidth / 2;
+                var posY = area.PositionY;
+
                 //Set the new text centered
                 foreach (var aChar in text.ToCharArray())
                 {
@@ -272,7 +277,7 @@ namespace LedGameDisplayLibrary
                         for (int y = 0; y < charObj.Height; y++)
                         {
                             //If the Area Borders are hard and content should be cut off, don't show pixels out of area.
-                            if (LayoutConfig.HardAreaBorders && (posX + x > area.Width + area.PositionX || posY + y > area.Height + area.PositionY))
+                            if (LayoutConfig.HardAreaBorders && (posX + x > area.Width + area.PositionX || posY + y > area.Height + area.PositionY || posX < 0 || posY < 0))
                                 continue;
 
                             var ledNum = GetLedNumber(posX + x, posY + y);
@@ -283,6 +288,34 @@ namespace LedGameDisplayLibrary
                     }
 
                     posX += charObj.Width + 1;
+                }
+            }
+            else if (area.Align == "right")
+            {
+                var posX = area.PositionX + area.Width;
+                var posY = area.PositionY;
+
+                //Set the new text right. Take the last character first
+                foreach (var aChar in text.ToCharArray().Reverse())
+                {
+                    var charObj = charSet.Characters.SingleOrDefault(x => x.Char == aChar);
+
+                    for (int x = charObj.Width; x >= 0; x--)
+                    {
+                        for (int y = charObj.Height; y >= 0; y--)
+                        {
+                            //If the Area Borders are hard and content should be cut off, don't show pixels out of area.
+                            if (LayoutConfig.HardAreaBorders && (posX + x > area.Width + area.PositionX || posY + y > area.Height + area.PositionY || posX < 0 || posY < 0))
+                                continue;
+
+                            var ledNum = GetLedNumber(posX - x, posY - y);
+                            //Console.WriteLine("Setting X={0}/{1} and Y={2}/{3} with LED Number {4}", area.PositionX, x, area.PositionY, y, ledNum);
+
+                            SetLed(ledNum, charObj.Pixels[x, y]);
+                        }
+                    }
+
+                    posX -= charObj.Width - 1;
                 }
             }
             Render();
