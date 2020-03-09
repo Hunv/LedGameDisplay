@@ -6,9 +6,40 @@
 
 <h1>@tournament.Name</h1>
 
-<a href="/edittournament">Turnierdetails bearbeiten</a><br />
+<a href="/edittournament">Turnierdetails bearbeiten</a>
+<br />
 <a href="/addmatch/@tournament.Id">Match erstellen</a>
 
+@if (tournament.Matches == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Startzeit</th>
+                <th>Team1</th>
+                <th>Team2</th>
+                <th>Länge</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var match in tournament.Matches)
+            {
+            <tr>
+                <td>@match.StartPlaned.ToShortDateString()</td>
+                <td>@match.Team1.Name</td>
+                <td>@match.Team2.Name</td>
+                <td>@match.HalfTimeTime.ToString()</td>
+                <td><a href="/managematch/@match.Id">Verwalten</a></td>
+            </tr>
+            }
+        </tbody>
+    </table>
+}
 
 @code {
     private Tournament tournament = new Tournament();

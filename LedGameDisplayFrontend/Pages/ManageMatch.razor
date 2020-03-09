@@ -1,0 +1,135 @@
+﻿@page "/managematch/{matchIdStr}"
+@using LedGameDisplayFrontend.Data
+@using LedGameDisplayFrontend.Data.JsonModel
+@using System.Net.Http
+@using System.Web
+@inject NavigationManager NavigationManager
+
+
+@if (match == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h1>@match.Team1.Name vs @match.Team2.Name</h1>
+    <a>Geplante Startzeit: @match.StartPlaned.ToString()</a>
+    <br />
+    <a>Tatsächliche Startzeit: @match.StartActual.ToString()</a>
+    <br />
+
+    <a href="/editmatch">Match bearbeiten</a>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>@match.Team1.Name</th>
+                <th>@match.Team2.Name</th>
+                <th>Restzeit</th>
+                <th>Halbzeit</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><h2>@match.ScoreTeam1</h2></td>
+                <td><h2>@match.ScoreTeam2</h2></td>
+                <td><h2>@match.CurrentTimeLeft.ToString()</h2></td>
+                <td><h2>@match.CurrentHalfTime</h2></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Schiedsrichter:</h2>
+    <ul>
+        @foreach (var referee in match.Referees)
+        {
+            <li>@referee.Firstname @referee.Lastname (@referee.Team)</li>
+        }
+    </ul>
+
+    <button class="btn btn-primary" @onclick="StartTime">Zeit starten</button>
+    <button class="btn btn-primary" @onclick="StopTime">Zeit stoppen</button>
+    <br />
+    <br />
+    <br />
+    <button class="btn btn-primary" @onclick="GoalTeam1">Tor Team1</button>
+    <button class="btn btn-primary" @onclick="GoalTeam2">Tor Team2</button>
+}
+
+@code {
+    private Match match = null;
+    private System.Timers.Timer tmrMatchtime = new System.Timers.Timer(1000);
+
+    [Parameter]
+    public string matchIdStr { get; set; }
+    private int matchId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (int.TryParse(matchIdStr, out matchId))
+        {
+            match = await PanelApiService.GetMatchAsync(matchId);
+        }
+
+        tmrMatchtime.Elapsed += OnTmrMatchtimeElapsed;
+    }
+
+    private async void OnTmrMatchtimeElapsed(Object source, System.Timers.ElapsedEventArgs e)
+    {
+        match.CurrentTimeLeft = match.CurrentTimeLeft.Subtract(new TimeSpan(0, 0, 1));
+
+        if (match.HalfTimeTime.TotalSeconds == 0)
+        {
+            tmrMatchtime.Stop();
+
+            if (match.CurrentHalfTime < match.HalfTimeAmount)
+            {
+                match.CurrentHalfTime++;
+                match.CurrentTimeLeft = match.HalfTimeTime;
+            }
+        }
+
+        await PanelApiService.UpdateMatchAsync(new UpdateMatchOngoing() 
+            {
+                CurrentHalfTime = match.CurrentHalfTime,
+                CurrentTimeLeft = match.CurrentTimeLeft,
+                Id = match.Id,
+                ScoreTeam1 = match.ScoreTeam1,
+                ScoreTeam2 = match.ScoreTeam2,
+                StartActual = match.StartActual
+            }
+        );
+
+        await InvokeAsync(() => { StateHasChanged(); });
+    }
+
+    private void StartTime()
+    {
+        if (match.CurrentHalfTime == 0)
+        {
+            match.CurrentTimeLeft = match.HalfTimeTime;
+            match.CurrentHalfTime = 1;
+            match.StartActual = DateTime.Now;
+        }
+        tmrMatchtime.Start();
+    }
+
+    private void StopTime()
+    {
+        tmrMatchtime.Stop();
+    }
+
+    private void GoalTeam1()
+    {
+        match.ScoreTeam1++;
+    }
+
+    private void GoalTeam2()
+    {
+        match.ScoreTeam2++;
+    }
+}
+
+

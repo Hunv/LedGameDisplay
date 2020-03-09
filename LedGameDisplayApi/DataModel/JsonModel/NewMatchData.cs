@@ -13,8 +13,9 @@ namespace LedGameDisplayApi.DataModel.JsonModel
 
         [Required]
         public int Team2Id { get; set; }
-        
-        public TimeSpan TimeLeft { get; set; }
+
+        public int HalfTimeAmount { get; set; } = 2;
+        public int HalfTimeSeconds { get; set; } = 900;
         public ICollection<int> RefereeIds { get; set; } = new List<int>() {0,0,0,0,0};
         
 

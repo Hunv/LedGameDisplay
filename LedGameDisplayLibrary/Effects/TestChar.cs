@@ -18,10 +18,11 @@ namespace LedGameDisplayLibrary.Effects
                 foreach (var aCharSet in Display.CharacterSets)
                 {
                     foreach(var aChar in aCharSet.Characters)
-                    { 
+                    {
+                        Console.WriteLine("Show Character {0} in Area {1}", aChar, aArea.Name);
                         Display.ShowChar(aChar, aArea.Name);
                         Display.Render();
-                        System.Threading.Thread.Sleep(200);
+                        System.Threading.Thread.Sleep(100);
                     }
                 }
             }

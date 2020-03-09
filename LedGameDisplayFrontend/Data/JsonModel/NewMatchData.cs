@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace LedGameDisplayFrontend.Data
+namespace LedGameDisplayFrontend.Data.JsonModel
 {
     public class NewMatchData
     {
@@ -14,7 +14,11 @@ namespace LedGameDisplayFrontend.Data
         [Required]
         public int Team2Id { get; set; }
 
-        public int MatchtimeSeconds { get; set; } = 900;
+        [Range(typeof(int), "1", "1000", ErrorMessage = "Bitte eine Anzahl an regulären Halbzeiten angeben")]
+        public int HalfTimeAmount { get; set; } = 2;
+
+        [Range(typeof(int), "1", "2147483647", ErrorMessage = "Bitte eine Länge jeder Halbzeit angeben")]
+        public int HalfTimeSeconds { get; set; } = 900;
         public List<int> RefereeIds { get; set; } = new List<int>() {0,0,0,0,0};
         
 

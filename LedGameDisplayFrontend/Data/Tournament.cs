@@ -14,7 +14,7 @@ namespace LedGameDisplayFrontend.Data
         [Required]
         [MaxLength(256, ErrorMessage = "Der Name kann höchstens aus 256 Zeichen bestehen.")]
         [MinLength(2, ErrorMessage = "Der Name muss mindestens aus zwei Zeichen bestehen.")]
-        [RegularExpression(@"^[a-zA-Z\s-]*$", ErrorMessage = "Der Name kann nur aus Buchstaben, Bindestrichen und Leerzeichen bestehen")]
+        [RegularExpression(@"^[a-zA-Z0-9\s-]*$", ErrorMessage = "Der Name kann nur aus Buchstaben, Bindestrichen und Leerzeichen bestehen")]
         public string Name { get; set; }
 
         [Required]

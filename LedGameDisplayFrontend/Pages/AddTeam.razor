@@ -1,5 +1,6 @@
 ﻿@page "/addteam"
 @using LedGameDisplayFrontend.Data
+@using LedGameDisplayFrontend.Data.JsonModel
 @using System.Net.Http
 @using System.Web
 @using System.Text.Json
@@ -28,17 +29,17 @@
 
     <button class="btn btn-primary" type="submit">Speichern</button>
 </EditForm>
-    @*<button class="btn btn-primary" @onclick="SaveTeam">Speichern</button>*@
+@*<button class="btn btn-primary" @onclick="SaveTeam">Speichern</button>*@
 
-    @code {
-        private NewTeamData newTeam = new NewTeamData();
+@code {
+    private NewTeamData newTeam = new NewTeamData();
 
 
-        private async void SaveTeam()
-        {
-            await PanelApiService.NewTeamAsync(newTeam);
-            NavigationManager.NavigateTo("/teams");
-        }
+    private async void SaveTeam()
+    {
+        await PanelApiService.NewTeamAsync(newTeam);
+        NavigationManager.NavigateTo("/teams");
     }
+}
 
 

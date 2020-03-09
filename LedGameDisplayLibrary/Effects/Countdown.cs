@@ -38,6 +38,7 @@ namespace LedGameDisplayLibrary.Effects
 
         public override void Execute()
         {
+            Console.WriteLine("Executing Countdown");
             tmrCountdown.Elapsed += TmrCountdown_Elapsed;
             tmrCountdown.Start();
         }
@@ -57,6 +58,7 @@ namespace LedGameDisplayLibrary.Effects
             }
             if (Minutes < 0)
             {
+                Console.WriteLine("Countdown finished");
                 tmrCountdown.Stop();
             }
         }

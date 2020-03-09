@@ -1,73 +1,84 @@
 ﻿{
-	"name":"90x60",
-	"width":90,
-	"height":60,
+	"name": "96x60",
+	"width": 96,
+	"height": 60,
 	"characterset": "Default",
 	"hardareaborders": true,
-	"brightness": 120,
+	"brightness": 1,
+	"dmachannel": 5,
+	"frequency": 800000,
 	"arealist": [
 		{
 			"name": "team1name",
 			"positionX": 0,
 			"positionY": 0,
-			"width": 44,
-			"height": 10
+			"width": 46,
+			"height": 10,
+			"align": "left"
 		},
 		{
 			"name": "team2name",
-			"positionX": 46,
+			"positionX": 49,
 			"positionY": 0,
-			"width": 44,
-			"height": 10
+			"width": 46,
+			"height": 10,
+			"align": "right"
 		},
 		{
 			"name": "team1goals",
-			"positionX": 9,
+			"positionX": 12,
 			"positionY": 12,
 			"width": 23,
-			"height": 15
+			"height": 15,
+			"align": "right"
 		},
 		{
 			"name": "team2goals",
-			"positionX": 58,
+			"positionX": 61,
 			"positionY": 12,
 			"width": 23,
-			"height": 15
+			"height": 15,
+			"align": "left"
 		},
 		{
 			"name": "goaldivider",
-			"positionX": 43,
+			"positionX": 46,
 			"positionY": 14,
 			"width": 4,
-			"height": 10
+			"height": 10,
+			"align": "center"
 		},
 		{
 			"name": "team1penalties",
-			"positionX": 2,
+			"positionX": 0,
 			"positionY": 31,
-			"width": 16,
-			"height": 29
+			"width": 21,
+			"height": 29,
+			"align": "left"
 		},
 		{
 			"name": "team2penalties",
-			"positionX": 72,
+			"positionX": 75,
 			"positionY": 31,
-			"width": 16,
-			"height": 29
+			"width": 21,
+			"height": 29,
+			"align": "left"
 		},
 		{
 			"name": "time",
-			"positionX": 20,
-			"positionY": 31,
-			"width": 50,
-			"height": 15
+			"positionX": 22,
+			"positionY": 32,
+			"width": 52,
+			"height": 15,
+			"align": "center"
 		},
 		{
 			"name": "text",
-			"positionX": 20,
+			"positionX": 22,
 			"positionY": 48,
-			"width": 50,
-			"height": 12
+			"width": 52,
+			"height": 12,
+			"align": "center"
 		}
 	],
 
