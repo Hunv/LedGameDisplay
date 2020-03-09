@@ -48,8 +48,7 @@ namespace LedGameDisplayApi.Controllers
         {
             var dm = new LedGameDisplayLibrary.DisplayManager();
             dm.Initialize("96x60");
-            dm.ShowText(text, LedGameDisplayLibrary.AreaName.Time);
-            
+            dm.ShowText(text, (LedGameDisplayLibrary.AreaName)Enum.Parse(typeof(LedGameDisplayLibrary.AreaName), area, true));
         }
 
         // PUT: api/LiveMatch?action={action}

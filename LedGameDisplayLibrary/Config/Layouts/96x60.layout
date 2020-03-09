@@ -12,21 +12,21 @@
 			"name": "team1name",
 			"positionX": 0,
 			"positionY": 0,
-			"width": 44,
+			"width": 46,
 			"height": 10,
 			"align": "left"
 		},
 		{
 			"name": "team2name",
-			"positionX": 46,
+			"positionX": 49,
 			"positionY": 0,
-			"width": 44,
+			"width": 46,
 			"height": 10,
 			"align": "right"
 		},
 		{
 			"name": "team1goals",
-			"positionX": 9,
+			"positionX": 12,
 			"positionY": 12,
 			"width": 23,
 			"height": 15,
@@ -34,7 +34,7 @@
 		},
 		{
 			"name": "team2goals",
-			"positionX": 58,
+			"positionX": 61,
 			"positionY": 12,
 			"width": 23,
 			"height": 15,
@@ -42,7 +42,7 @@
 		},
 		{
 			"name": "goaldivider",
-			"positionX": 43,
+			"positionX": 46,
 			"positionY": 14,
 			"width": 4,
 			"height": 10,
@@ -52,21 +52,21 @@
 			"name": "team1penalties",
 			"positionX": 0,
 			"positionY": 31,
-			"width": 18,
+			"width": 21,
 			"height": 29,
 			"align": "left"
 		},
 		{
 			"name": "team2penalties",
-			"positionX": 72,
+			"positionX": 75,
 			"positionY": 31,
-			"width": 18,
+			"width": 21,
 			"height": 29,
 			"align": "left"
 		},
 		{
 			"name": "time",
-			"positionX": 19,
+			"positionX": 22,
 			"positionY": 32,
 			"width": 52,
 			"height": 15,
@@ -74,9 +74,9 @@
 		},
 		{
 			"name": "text",
-			"positionX": 20,
+			"positionX": 22,
 			"positionY": 48,
-			"width": 50,
+			"width": 52,
 			"height": 12,
 			"align": "center"
 		}
