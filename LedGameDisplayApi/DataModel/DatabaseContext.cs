@@ -16,6 +16,7 @@ namespace LedGameDisplayApi.DataModel
         public DbSet<Penalty> Penalties { get; set; }
         public DbSet<DbMatch2Player> DbMatch2Player { get; set; }
         public DbSet<DbMatch2PlayerReferee> DbMatch2PlayerReferee { get; set; }
+        public DbSet<DisplayCommand> DisplayCommands { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -87,6 +88,12 @@ namespace LedGameDisplayApi.DataModel
             {
                 entity.HasKey(e => e.Id);
                 entity.HasMany(e => e.Matches).WithOne(e => e.Tournament);
+            });
+
+            modelBuilder.Entity<DisplayCommand>().ToTable("DisplayCommands", DbSettings.dbSchema);
+            modelBuilder.Entity<DisplayCommand>(entity =>
+            {
+                entity.HasKey(e => e.Id);
             });
 
             base.OnModelCreating(modelBuilder);

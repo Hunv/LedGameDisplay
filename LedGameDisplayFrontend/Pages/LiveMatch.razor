@@ -81,32 +81,32 @@ else
 
     private async void StartGame()
     {
-        await PanelApiService.UpdateLiveMatchAsync("start");
+        await PanelApiService.UpdateLiveMatchAsync(liveMatch.Id, "start");
     }
 
     private async void PauseGame()
     {
-        await PanelApiService.UpdateLiveMatchAsync("pause");
+        await PanelApiService.UpdateLiveMatchAsync(liveMatch.Id, "pause");
     }
     
     private async void UnpauseGame()
     {
-        await PanelApiService.UpdateLiveMatchAsync("unpause");
+        await PanelApiService.UpdateLiveMatchAsync(liveMatch.Id, "unpause");
     }
 
     private async void GoalTeam1()
     {
-        await PanelApiService.UpdateLiveMatchAsync("goal1");
+        await PanelApiService.UpdateLiveMatchAsync(liveMatch.Id, "goal1");
     }
 
     private async void GoalTeam2()
     {
-        await PanelApiService.UpdateLiveMatchAsync("goal2");
+        await PanelApiService.UpdateLiveMatchAsync(liveMatch.Id, "goal2");
     }
 
     private async void EndGame()
     {
-        await PanelApiService.UpdateLiveMatchAsync("finish");
+        await PanelApiService.UpdateLiveMatchAsync(liveMatch.Id, "finish");
     }
 }
 

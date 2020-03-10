@@ -49,13 +49,9 @@ else
         }
     </ul>
 
-    <button class="btn btn-primary" @onclick="StartTime">Zeit starten</button>
-    <button class="btn btn-primary" @onclick="StopTime">Zeit stoppen</button>
-    <br />
-    <br />
-    <br />
-    <button class="btn btn-primary" @onclick="GoalTeam1">Tor Team1</button>
-    <button class="btn btn-primary" @onclick="GoalTeam2">Tor Team2</button>
+    <button class="btn btn-primary" @onclick="StartMatch">Match starten</button>
+    <button class="btn btn-primary" @onclick="PauseMatch">Match pausieren</button>
+    <button class="btn btn-primary" @onclick="UnpauseMatch">Match fortsetzen</button>
 }
 
 @code {
@@ -91,44 +87,36 @@ else
             }
         }
 
-        await PanelApiService.UpdateMatchAsync(new UpdateMatchOngoing() 
-            {
-                CurrentHalfTime = match.CurrentHalfTime,
-                CurrentTimeLeft = match.CurrentTimeLeft,
-                Id = match.Id,
-                ScoreTeam1 = match.ScoreTeam1,
-                ScoreTeam2 = match.ScoreTeam2,
-                StartActual = match.StartActual
-            }
+        await PanelApiService.UpdateMatchAsync(new UpdateMatchOngoing()
+        {
+            CurrentHalfTime = match.CurrentHalfTime,
+            CurrentTimeLeft = match.CurrentTimeLeft,
+            Id = match.Id,
+            ScoreTeam1 = match.ScoreTeam1,
+            ScoreTeam2 = match.ScoreTeam2,
+            StartActual = match.StartActual
+        }
         );
 
         await InvokeAsync(() => { StateHasChanged(); });
     }
 
-    private void StartTime()
+    private async void StartMatch()
     {
-        if (match.CurrentHalfTime == 0)
-        {
-            match.CurrentTimeLeft = match.HalfTimeTime;
-            match.CurrentHalfTime = 1;
-            match.StartActual = DateTime.Now;
-        }
+        await PanelApiService.UpdateLiveMatchAsync(match.Id, "start");
         tmrMatchtime.Start();
     }
 
-    private void StopTime()
+    private async Task PauseMatch()
     {
+        await PanelApiService.UpdateLiveMatchAsync(match.Id, "pause");
         tmrMatchtime.Stop();
     }
 
-    private void GoalTeam1()
+    private async Task UnpauseMatch()
     {
-        match.ScoreTeam1++;
-    }
-
-    private void GoalTeam2()
-    {
-        match.ScoreTeam2++;
+        await PanelApiService.UpdateLiveMatchAsync(match.Id, "unpause");
+        tmrMatchtime.Stop();
     }
 }
 

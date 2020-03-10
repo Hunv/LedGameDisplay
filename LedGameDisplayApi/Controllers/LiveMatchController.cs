@@ -25,82 +25,100 @@ namespace LedGameDisplayApi.Controllers
 
         // GET: api/LiveMatch
         [HttpGet]
-        public Match GetLiveMatch()
+        public List<Match> GetLiveMatches()
         {   
             //Load Live Match from DB, if there is no Live Match set. The result can be null if there is really no livematch
-            if (LiveMatch.CurrentMatch == null)
+            if (LiveMatchManager.CurrentMatches == null || LiveMatchManager.CurrentMatches.Count == 0)
             {
                 using (var dbContext = new DatabaseContext())
                 {
-                    LiveMatch.CurrentMatch = dbContext.Matches.Include("Team1").Include("Team2").SingleOrDefault(x => x.IsLive);
+                    var liveMatches = dbContext.Matches.Include("Team1").Include("Team2").Where(x => x.IsLive);
+                    LiveMatchManager.CurrentMatches = new List<Match>(liveMatches);
                 }
-                
-                LiveMatch.Initialize();
+
+                LiveMatchManager.Initialize();
             }
 
-            return LiveMatch.CurrentMatch;
+            return LiveMatchManager.CurrentMatches;
 
         }
 
-        // POST: api/LiveMatch/{id}
-        [HttpPost("{id}")]
-        public void PostMatch(int id)
-        {
-            using (var dbContext = new DatabaseContext())
-            {
-                var toBeLiveMatch = dbContext.Matches.Single(x => x.Id == id);
-                toBeLiveMatch.IsLive = true;
-                LiveMatch.CurrentMatch = toBeLiveMatch;
-                var changeCount = dbContext.SaveChanges();
-                _logger.LogDebug("Changing {0} datasets to set {1} as live match", changeCount, id);
-            }
-            LiveMatch.Initialize();
-        }
-
-        // PUT: api/LiveMatch?action={action}
-        [HttpPut]
-        public void PutMatch([FromQuery] string action)
+        // PUT: api/LiveMatch/id?action={action}
+        [HttpPut("{id}")]
+        public async void PutMatch(int id, [FromQuery] string action)
         {
             using (var dbContext = new DatabaseContext())
             {
                 //Load Live Match from DB, if there is no Live Match set. The result can be null if there is really no livematch
-                if (LiveMatch.CurrentMatch == null)
+                if (LiveMatchManager.CurrentMatches == null || LiveMatchManager.CurrentMatches.Count == 0)
                 {
-                    LiveMatch.CurrentMatch = dbContext.Matches.SingleOrDefault(x => x.IsLive);
-                    LiveMatch.Initialize();
+                    var liveMatches = dbContext.Matches.Include("Team1").Include("Team2").Where(x => x.IsLive);
+                    LiveMatchManager.CurrentMatches = new List<Match>(liveMatches);
+                    LiveMatchManager.Initialize();
                 }
 
-                if (LiveMatch.CurrentMatch == null)
+                //if (LiveMatchManager.CurrentMatches == null || LiveMatchManager.CurrentMatches.Count == 0)
+                //{
+                //    _logger.LogWarning("Currently no match is live");
+                //    return;
+                //}
+
+                if (LiveMatchManager.CurrentMatches.Count(x => x.Id == id) == 0)
                 {
-                    _logger.LogWarning("Currently no match is live");
-                    return;
+                    LiveMatchManager.CurrentMatches.Add(dbContext.Matches.Include("Team1").Include("Team2").Single(x => x.Id == id));
                 }
 
                 switch (action)
                 {
-                    case "start":
-                        LiveMatch.CurrentMatch.StartActual = DateTime.Now;
-                        LiveMatch.StartHalftime();
+                    case "prepare": //Prepare a match to start. The match will be marked as live but the time will not run.
+                        LiveMatchManager.CurrentMatches.Single(x => x.Id == id).IsLive = true;
+
                         break;
-                    case "pause":
-                        LiveMatch.PauseMatch();
+                    case "start": //start a match. The match will be marked as live and the time will start to run.
+                        LiveMatchManager.CurrentMatches.Single(x => x.Id == id).IsLive = true;
+                        LiveMatchManager.CurrentMatches.Single(x => x.Id == id).StartActual = DateTime.Now;
+                        LiveMatchManager.StartHalftime(id);
+
                         break;
-                    case "unpause":
-                        LiveMatch.UnpauseMatch();
+                    case "pause": //pause a match. The match will be marked as live but the time will stop running
+                        LiveMatchManager.CurrentMatches.Single(x => x.Id == id).IsLive = true;
+                        LiveMatchManager.PauseMatch(id);
+                        
                         break;
-                    case "cancel":
-                        LiveMatch.CancelMatch();
-                        LiveMatch.CurrentMatch.EndActual = DateTime.Now;
+                    case "unpause": //unpause a match. The match will be marked as live and the time will start running
+                        LiveMatchManager.CurrentMatches.Single(x => x.Id == id).IsLive = true;
+                        LiveMatchManager.UnpauseMatch(id);
+
                         break;
-                    case "finish":
-                        LiveMatch.FinishMatch();
-                        LiveMatch.CurrentMatch.EndActual = DateTime.Now;
+                    case "cancel": //cancel a match. The match will be unmarked as live                        
+                        LiveMatchManager.CurrentMatches.Single(x => x.Id == id).IsLive = false;
+                        LiveMatchManager.CurrentMatches.Single(x => x.Id == id).EndActual = DateTime.Now;
+                        await LiveMatchManager.CancelMatch(id);
+
                         break;
-                    case "goal1":
-                        LiveMatch.Goal(1);
+                    case "end": //a match time is over. The match will still be marked as live until "finish" is triggerd                        
+                        LiveMatchManager.CurrentMatches.Single(x => x.Id == id).IsLive = true;
+                        LiveMatchManager.CurrentMatches.Single(x => x.Id == id).EndActual = DateTime.Now;
+                        await LiveMatchManager.EndMatch(id);
+
                         break;
-                    case "goal2":
-                        LiveMatch.Goal(2);
+                    case "finish": //a match time is over. The match will be unmarked as live                        
+                        LiveMatchManager.CurrentMatches.Single(x => x.Id == id).IsLive = false;
+                        LiveMatchManager.CurrentMatches.Single(x => x.Id == id).EndActual = DateTime.Now;
+                        await LiveMatchManager.FinishMatch(id);
+
+                        break;
+                    case "goal1": //Team 1 scores a goal
+                        LiveMatchManager.Goal(id, 1);
+                        break;
+                    case "goal2": //Team 2 scores a goal
+                        LiveMatchManager.Goal(id, 2);
+                        break;
+                    case "ungoal1": //Undo a Team 1 score
+                        LiveMatchManager.UnGoal(id, 1);
+                        break;
+                    case "ungoal2": //Undo a Team 2 score
+                        LiveMatchManager.UnGoal(id, 2);
                         break;
 
                 }
@@ -109,36 +127,35 @@ namespace LedGameDisplayApi.Controllers
             }
         }
 
-        // DELETE: api/LiveMatch
-        [HttpDelete]
-        public void DeleteLiveMatch()
+        // DELETE: api/LiveMatch/id
+        [HttpDelete("{id}")]
+        public void DeleteLiveMatch(int id)
         {
             using (var dbContext = new DatabaseContext())
             {
                 //Load Live Match from DB, if there is no Live Match set. The result can be null if there is really no livematch
-                if (LiveMatch.CurrentMatch == null)
+                if (LiveMatchManager.CurrentMatches == null || LiveMatchManager.CurrentMatches.Count == 0)
                 {
-                    LiveMatch.CurrentMatch = dbContext.Matches.SingleOrDefault(x => x.IsLive);
-                    LiveMatch.Initialize();
+                    var liveMatches = dbContext.Matches.Include("Team1").Include("Team2").Where(x => x.IsLive);
+                    LiveMatchManager.CurrentMatches = new List<Match>(liveMatches);
+                    LiveMatchManager.Initialize();
                 }
 
-                if (LiveMatch.CurrentMatch == null)
+                if (LiveMatchManager.CurrentMatches == null || LiveMatchManager.CurrentMatches.Count == 0)
                 {
                     _logger.LogWarning("Currently no match is live");
                     return;
                 }
 
-                var toBeNonLive = dbContext.Matches.SingleOrDefault(x => x.Id == LiveMatch.CurrentMatch.Id);
+                var toBeNonLive = dbContext.Matches.SingleOrDefault(x => x.Id == id);
                 if (toBeNonLive == null)
                 {
-                    _logger.LogWarning("Livematch not found to stop.");
+                    _logger.LogWarning("Match with id {0} not found to stop.", id);
                     return;
                 }
                 toBeNonLive.IsLive = false;
                 var changeCount = dbContext.SaveChanges();
-                _logger.LogDebug("Set Livematch {0} to Non-Live by changing {1} datasets", toBeNonLive.Id, changeCount);
-
-                LiveMatch.CurrentMatch = null;
+                _logger.LogDebug("Set Match {0} to Non-Live by changing {1} datasets", toBeNonLive.Id, changeCount);
             }
         }
     }

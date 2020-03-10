@@ -1,0 +1,94 @@
+﻿@page "/manualmatch"
+@using LedGameDisplayFrontend.Data
+@using LedGameDisplayFrontend.Data.JsonModel
+@using System.Net.Http
+@using System.Web
+@using System.Text.Json
+@inject NavigationManager NavigationManager
+
+<h1>ManualMatch</h1>
+
+@*@if (loading == true)
+{
+    <p><em>Loading...</em></p>
+}
+else if (liveMatch == null)
+{
+    <p><em>No match is ongoing</em></p>
+}
+else
+{*@
+    <h2>Team1 - @team1Name</h2>
+    <br />
+    <h2>@team1Score</h2>
+    <br />
+    <br />
+    <h2>Team2 - @team2Name</h2>
+    <br />
+    <h2>@team2Score</h2>
+    <br />
+    <br />
+    <h2>Timeleft</h2>
+    <br />
+    <h2>@timeLeft</h2>
+    <br />
+
+    
+    
+    <button class="btn btn-primary" @onclick="PauseGame">Zeit stoppen</button>
+    <br />
+    <br />
+    <br />
+    <button class="btn btn-primary" @onclick="GoalTeam1">Tor Team1</button>
+    <button class="btn btn-primary" @onclick="GoalTeam2">Tor Team2</button>
+    <br />
+    <br />
+    <br />
+    <button class="btn btn-primary" @onclick="StartGame">Spiel starten/fortsetzen</button>
+@*}*@
+
+@code {
+    private string team1Name = "Team1";
+    private string team2Name = "Team2";
+    private int team1Score = 0;
+    private int team2Score = 0;
+
+    private System.Timers.Timer tmrMatchtime = new System.Timers.Timer(1000);
+    private TimeSpan timeLeft = new TimeSpan(0, 10, 0);
+
+    protected override async Task OnInitializedAsync()
+    {
+        tmrMatchtime.Elapsed += OnTmrMatchtimeElapsed;
+    }
+
+    private async void OnTmrMatchtimeElapsed(Object source, System.Timers.ElapsedEventArgs e)
+    {
+        timeLeft = timeLeft.Subtract(new TimeSpan(0, 0, 1));
+        await PanelApiService.UpdateAreaTextAsync("time", timeLeft.Minutes.ToString("D2") + ":" + timeLeft.Seconds.ToString("D2"));
+        await InvokeAsync(() => { StateHasChanged(); });
+    }
+
+    private void StartGame()
+    {
+        tmrMatchtime.Start();
+    }
+
+    private void PauseGame()
+    {
+        tmrMatchtime.Stop();
+    }
+
+    private async void GoalTeam1()
+    {
+        team1Score++;
+        await PanelApiService.UpdateAreaTextAsync("team1goals", team1Score.ToString());
+    }
+
+    private async void GoalTeam2()
+    {
+        team2Score++;
+        await PanelApiService.UpdateAreaTextAsync("team2goals", team2Score.ToString());
+    }
+}
+
+

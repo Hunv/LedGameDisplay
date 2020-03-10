@@ -42,8 +42,20 @@ namespace LedGameDisplayApi.DataModel
         public DateTime StartActual { get; set; }
         public DateTime EndActual { get; set; }
         public bool IsLive { get; set; }
+        public string MatchStatus { get; set; }
         
         public Tournament Tournament { get; set; }
 
+    }
+
+    public enum MatchStatus
+    {
+        preparing,
+        running,
+        halftime,
+        paused,
+        canceled,
+        ended,
+        finished
     }
 }

@@ -114,6 +114,7 @@ namespace LedGameDisplayLibrary
 
         public static void LoadLayout(string layoutName)
         {
+            Console.WriteLine("Loading layout {0}", layoutName);
             var layoutFilePath = string.Format("Config/Layouts/{0}.layout", layoutName);
 
             if (!File.Exists(layoutFilePath))
@@ -127,10 +128,16 @@ namespace LedGameDisplayLibrary
             sR.Close();
                        
             LayoutConfig = JsonConvert.DeserializeObject<Layout>(layout);
+
+            if (LayoutConfig != null)
+                Console.WriteLine("Layout loaded successfully");
+            else
+                Console.WriteLine("Loading layout FAILED");
         }
 
         public static void LoadCharacters()
         {
+            Console.WriteLine("Loading characters {0}", LayoutConfig.CharacterSet);
             var characterPath = string.Format("Config/Characters/{0}", LayoutConfig.CharacterSet);
             if (!Directory.Exists(characterPath))
             {
@@ -153,7 +160,7 @@ namespace LedGameDisplayLibrary
                 foreach (var charDef in LayoutConfig.CharacterList)
                 {
                     StreamReader sR = new StreamReader(aResolutionFolder + "/" + charDef.File, Encoding.Default);
-                    var charFile = sR.ReadToEnd().Replace("\r","").Split('\n');
+                    var charFile = sR.ReadToEnd().Replace("\r", "").Split('\n');
                     sR.Close();
 
                     var charDefinition = new Character(charFile[0].Length, charFile.Length);
@@ -162,23 +169,30 @@ namespace LedGameDisplayLibrary
                     charDefinition.File = charDef.File;
 
                     var lineCount = 0;
-                    foreach(var charContentLine in charFile)
+                    foreach (var charContentLine in charFile)
                     {
-                        if (lineCount > charSet.Height) //Ignore lines, that will exceed the charater size
-                            continue;
-
-                        var charContent = charContentLine.ToCharArray();
-
-                        //Get pixels, maximum the number of the width
-                        for (var pxNum = 0; pxNum < charSet.Width && pxNum < charContent.Length; pxNum++)
+                        try
                         {
-                            if (charContent[pxNum] == ' ')
+                            if (lineCount > charSet.Height) //Ignore lines, that will exceed the charater size
                                 continue;
 
-                            var baseBrightness = (byte)(((int.Parse(charContent[pxNum].ToString(), System.Globalization.NumberStyles.HexNumber) + 1) * 16) - 1);
-                            charDefinition.Pixels[pxNum, lineCount] = Color.FromArgb(baseBrightness, 255, 255, 255);
-                        }
+                            var charContent = charContentLine.ToCharArray();
 
+                            //Get pixels, maximum the number of the width
+                            for (var pxNum = 0; pxNum < charSet.Width && pxNum < charContent.Length; pxNum++)
+                            {
+                                if (charContent[pxNum] == ' ')
+                                    continue;
+
+                                var baseBrightness = (byte)(((int.Parse(charContent[pxNum].ToString(), System.Globalization.NumberStyles.HexNumber) + 1) * 16) - 1);
+                                charDefinition.Pixels[pxNum, lineCount] = Color.FromArgb(baseBrightness, 255, 255, 255);
+                            }
+                        }
+                        catch (Exception ea)
+                        {
+                            Console.WriteLine("Failed loading Character {0} in line {1} and resolution {2}", charDef.Char, lineCount, aResolutionFolder);
+                            Console.WriteLine(ea.ToString());
+                        }
                         lineCount++;
                     }
 
@@ -319,7 +333,7 @@ namespace LedGameDisplayLibrary
                             var ledNum = GetLedNumber(posX - x, posY + y);
                             //Console.WriteLine("Setting X={0}/{1} and Y={2}/{3} with LED Number {4}", area.PositionX, x, area.PositionY, y, ledNum);
 
-                            SetLed(ledNum, charObj.Pixels[x, y]);
+                            SetLed(ledNum, charObj.Pixels[charObj.Width-1-x, y]);
                         }
                     }
 

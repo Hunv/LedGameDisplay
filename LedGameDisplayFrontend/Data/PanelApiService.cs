@@ -295,13 +295,33 @@ namespace LedGameDisplayFrontend.Data
             }
         }
 
-        public static async Task UpdateLiveMatchAsync(string action)
+        public static async Task UpdateLiveMatchAsync(int matchId, string action)
         {
             HttpClient client = new HttpClient();
             var requestMessage = new HttpRequestMessage()
             {
                 Method = new HttpMethod("PUT"),
-                RequestUri = new Uri(_ServerBaseUrl + "livematch?action=" + action),
+                RequestUri = new Uri(_ServerBaseUrl + "livematch/" + matchId + "?action=" + action),
+                Content = new StringContent("")
+            };
+
+            requestMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+            var response = await client.SendAsync(requestMessage);
+            if (!response.IsSuccessStatusCode)
+            {
+                var responseBody = await response.Content.ReadAsStringAsync();
+            }
+        }
+
+
+        public static async Task UpdateAreaTextAsync(string area, string text)
+        {
+            HttpClient client = new HttpClient();
+            var requestMessage = new HttpRequestMessage()
+            {
+                Method = new HttpMethod("POST"),
+                RequestUri = new Uri(_ServerBaseUrl + "test/" + area + "/" + text),
                 Content = new StringContent("")
             };
 

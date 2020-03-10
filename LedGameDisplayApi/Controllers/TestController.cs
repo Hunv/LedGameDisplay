@@ -44,11 +44,32 @@ namespace LedGameDisplayApi.Controllers
 
         // POST: api/Test/{area}/{text}
         [HttpPost("{area}/{text}")]
-        public void PostMatch(string area, string text)
+        public async void PostMatch(string area, string text)
         {
-            var dm = new LedGameDisplayLibrary.DisplayManager();
-            dm.Initialize("96x60");
-            dm.ShowText(text, (LedGameDisplayLibrary.AreaName)Enum.Parse(typeof(LedGameDisplayLibrary.AreaName), area, true));
+            using (var dbContext = new DatabaseContext())
+            {
+                //dbContext.Matches.Include("Team1").Include("Team2").SingleOrDefault(x => x.IsLive);
+                dbContext.DisplayCommands.Add(new DisplayCommand()
+                {
+                    Area = "team1goals",
+                    Command = "showtext",
+                    Value = "0"
+                });
+                dbContext.DisplayCommands.Add(new DisplayCommand()
+                {
+                    Area = "team2goals",
+                    Command = "showtext",
+                    Value = "0"
+                });
+                dbContext.DisplayCommands.Add(new DisplayCommand()
+                {
+                    Area = "time",
+                    Command = "showtext",
+                    Value = "10:00",
+                    Expires = DateTime.Now.AddSeconds(5)
+                });
+                await dbContext.SaveChangesAsync();
+            }
         }
 
         // PUT: api/LiveMatch?action={action}

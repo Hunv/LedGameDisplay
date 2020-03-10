@@ -11,7 +11,7 @@ namespace LedGameDisplayApi.DataModel
         /// <summary>
         /// Filename of the Database file
         /// </summary>
-        public static readonly string dbFilename = "GameDatabase.db";
+        public static readonly string dbFilename = "../GameDatabase.db";
 
         /// <summary>
         /// Filename of the Database file
