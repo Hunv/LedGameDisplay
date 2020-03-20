@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using LedGameDisplayLibrary;
 
 namespace LedGameDisplayApi.Controllers
 {
@@ -48,26 +49,14 @@ namespace LedGameDisplayApi.Controllers
         {
             using (var dbContext = new DatabaseContext())
             {
+                Enum.TryParse(area, out AreaName areaEnum);
+
                 //dbContext.Matches.Include("Team1").Include("Team2").SingleOrDefault(x => x.IsLive);
-                dbContext.DisplayCommands.Add(new DisplayCommand()
-                {
-                    Area = "team1goals",
-                    Command = "showtext",
-                    Value = "0"
-                });
-                dbContext.DisplayCommands.Add(new DisplayCommand()
-                {
-                    Area = "team2goals",
-                    Command = "showtext",
-                    Value = "0"
-                });
-                dbContext.DisplayCommands.Add(new DisplayCommand()
-                {
-                    Area = "time",
-                    Command = "showtext",
-                    Value = "10:00",
-                    Expires = DateTime.Now.AddSeconds(5)
-                });
+                DisplayManager dm = new DisplayManager();                
+                //dm.ShowText("0", AreaName.Team1Goals);
+                //dm.ShowText("0", AreaName.Team2Goals);
+                //dm.ShowText("00:00", AreaName.Time, DateTime.Now.AddSeconds(5));
+                dm.ShowText(text, areaEnum);
                 await dbContext.SaveChangesAsync();
             }
         }

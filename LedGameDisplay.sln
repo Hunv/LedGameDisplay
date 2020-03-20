@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LedGameDisplayTestApp", "Le
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LedGameDisplayFrontend", "LedGameDisplayFrontend\LedGameDisplayFrontend.csproj", "{B153C418-43AB-44BD-BE6A-D3EDE14E68AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LedGameManager", "LedGameManager\LedGameManager.csproj", "{5879872D-42B0-44FF-80DB-09C5F63B7054}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,10 +33,6 @@ Global
 		{B153C418-43AB-44BD-BE6A-D3EDE14E68AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B153C418-43AB-44BD-BE6A-D3EDE14E68AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B153C418-43AB-44BD-BE6A-D3EDE14E68AA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5879872D-42B0-44FF-80DB-09C5F63B7054}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5879872D-42B0-44FF-80DB-09C5F63B7054}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5879872D-42B0-44FF-80DB-09C5F63B7054}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5879872D-42B0-44FF-80DB-09C5F63B7054}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

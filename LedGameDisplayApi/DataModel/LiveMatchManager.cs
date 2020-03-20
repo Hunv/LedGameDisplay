@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using LedGameDisplayLibrary;
 
 namespace LedGameDisplayApi.DataModel
 {
@@ -18,7 +19,7 @@ namespace LedGameDisplayApi.DataModel
         {
             foreach (var aMatch in CurrentMatches)
             {
-                Console.WriteLine("ID:{0} - TimeLeft Elapsed. Time left: {1} Current time: {2}", aMatch.Id, aMatch.CurrentTimeLeft, DateTime.Now);
+                //Console.WriteLine("ID:{0} - TimeLeft Elapsed. Time left: {1} Current time: {2}", aMatch.Id, aMatch.CurrentTimeLeft, DateTime.Now);
 
                 if (aMatch.CurrentTimeLeft.TotalSeconds > 0 && 
                     aMatch.MatchStatus == "running")
@@ -35,22 +36,23 @@ namespace LedGameDisplayApi.DataModel
 
         public async static Task TimeElapsed(int matchId)
         {
-            CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft = CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft.Subtract(new TimeSpan(0, 0, 1));
-
-            using (var dbContext = new DatabaseContext())
+            try
             {
-                var dbMatch = dbContext.Matches.Single(x => x.Id == matchId);
-                dbMatch.CurrentTimeLeft = CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft;
+                CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft = CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft.Subtract(new TimeSpan(0, 0, 1));
 
-                dbContext.DisplayCommands.Add(new DisplayCommand()
+                using (var dbContext = new DatabaseContext())
                 {
-                    Area = "time",
-                    ColorHex = "00FF00",
-                    Command = "showtext",
-                    Value = string.Format("{0}:{1}", CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft.Minutes, CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft.Seconds)
-                }) ;
-                await dbContext.SaveChangesAsync();
+                    DisplayManager dM = new DisplayManager();
+                    dM.ShowText(string.Format("{0}:{1}", CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft.Minutes, CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft.Seconds.ToString("D2")),
+                        AreaName.Time,
+                        DateTime.Now.AddSeconds(1));
+
+                    var dbMatch = dbContext.Matches.Single(x => x.Id == matchId);
+                    dbMatch.CurrentTimeLeft = CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft;
+                    await dbContext.SaveChangesAsync();
+                }
             }
+            catch (Exception) { }
         }
 
         public static void Initialize()
@@ -70,15 +72,12 @@ namespace LedGameDisplayApi.DataModel
                 dbMatch.CurrentTimeLeft = CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft;
                 dbMatch.CurrentHalfTime = CurrentMatches.Single(x => x.Id == matchId).CurrentHalfTime;
 
-                dbContext.DisplayCommands.Add(new DisplayCommand()
-                {
-                    Area = "time",
-                    Command = "showtext",
-                    Value = string.Format("{0}:{1}", CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft.Minutes.ToString("D2"), CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft.Seconds.ToString("D2")),
-                    Expires = DateTime.Now.AddSeconds(5)
-                }) ;
-
                 await dbContext.SaveChangesAsync();
+
+                DisplayManager dM = new DisplayManager();
+                dM.ShowText(string.Format("{0}:{1}", CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft.Minutes.ToString("D2"), CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft.Seconds.ToString("D2")),
+                    AreaName.Time,
+                    DateTime.Now.AddSeconds(2));
             }
 
             _TmrTimeLeft.Start();

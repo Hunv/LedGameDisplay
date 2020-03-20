@@ -16,15 +16,15 @@ namespace LedGameDisplayApi.DataModel
         /// <summary>
         /// Filename of the Database file
         /// </summary>
-        public static readonly string dbSchema = "dbo";
+        public static readonly string dbSchema = null; //for SQLite: "dbo"
 
         /// <summary>
         /// Trigger the Initialization of the Database, if not exists.
         /// </summary>
         public static void Initialize()
         {
-            if (File.Exists(dbFilename))
-                return;
+            //if (File.Exists(dbFilename))
+            //    return;
 
             using (var dbContext = new DatabaseContext())
             {

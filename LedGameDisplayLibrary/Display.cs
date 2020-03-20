@@ -7,6 +7,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Timers;
 
 namespace LedGameDisplayLibrary
 {
@@ -72,6 +73,16 @@ namespace LedGameDisplayLibrary
         /// </summary>
         private static Controller Controller { get; set; }
 
+        /// <summary>
+        /// The changes to perform at the display received by application
+        /// </summary>
+        public static Queue<Tuple<string, string, DateTime?>> ChangeQueue { get; set; } //= new Queue<Tuple<string, string, DateTime?>>();
+
+        /// <summary>
+        /// The timer, that will update the display every x ms. Default: 1000ms
+        /// </summary>
+        private static Timer _TmrWorker = new Timer(150);
+
         public static void Calibrate()
         {
             if (LedCount == 0)
@@ -110,6 +121,10 @@ namespace LedGameDisplayLibrary
             WS281X = new WS281x(ControllerSettings);
 
             SetAll(Color.Black);
+
+            ChangeQueue = new Queue<Tuple<string, string, DateTime?>>();
+            _TmrWorker.Elapsed += _TmrWorker_Elapsed;
+            _TmrWorker.Start();
         }
 
         public static void LoadLayout(string layoutName)
@@ -216,10 +231,13 @@ namespace LedGameDisplayLibrary
 
         public static void Render()
         {
+            var start = DateTime.Now;
+            Console.Write("Rendering...");
             WS281X.Render();
+            Console.WriteLine(" Done ({0}ms)", DateTime.Now.Subtract(start).TotalMilliseconds);
         }
 
-        public static void ShowString(string text, string areaName = null, string characterSet = null)
+        public static void ShowString(string text, string areaName = null, string characterSet = null, bool finalRender = false)
         {
             var area = areaName == null ? new Area() {Width = X, Height = Y} : LayoutConfig.AreaList.Single(x => x.Name == areaName);
 
@@ -340,10 +358,10 @@ namespace LedGameDisplayLibrary
                     posX -= charObj.Width + 1;
                 }
             }
-            Render();
+            if (finalRender) Render();
         }
 
-        public static void ShowChar(Character charObj, string areaName)
+        public static void ShowChar(Character charObj, string areaName, bool finalRender = false)
         {
             var area = LayoutConfig.AreaList.Single(x => x.Name == areaName);
 
@@ -361,7 +379,7 @@ namespace LedGameDisplayLibrary
                     SetLed(ledNum, charObj.Pixels[x, y]);
                 }
             }
-            Render();
+            if (finalRender) Render();
         }
 
         public static void ShowChar(char character, string areaName)
@@ -401,6 +419,37 @@ namespace LedGameDisplayLibrary
 
             //Console.WriteLine("LED Number is {0}", calculatedX + X * matrixY);
             return calculatedX + Display.X * calculatedY;
+        }
+
+
+        private static void _TmrWorker_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            if (ChangeQueue == null || ChangeQueue.Count == 0)
+                return;
+
+            while(ChangeQueue.Count != 0)
+            {
+                var change = ChangeQueue.Dequeue();
+
+                if (change == null)
+                    return;
+
+                //In case the change is expired, don't handle it and cann the Worker again
+                if (change.Item3 != null && change.Item3 < DateTime.Now)
+                {
+                    Console.WriteLine("Text \"{0}\" expired.", change.Item2);
+                    _TmrWorker_Elapsed(sender, e);
+                    return;
+                }
+
+                //Console.WriteLine("Writing Text \"{0}\" in area {1}", change.Item2, change.Item1.ToLower());
+
+                //Set the string at the backend Matrix, but don't imediatly render and set the display
+                ShowString(change.Item2, change.Item1.ToLower(), null, false);
+            }
+
+            //Render the changes
+            Render();
         }
     }
 }
