@@ -54,7 +54,8 @@
 			"positionY": 31,
 			"width": 21,
 			"height": 29,
-			"align": "left"
+			"align": "left",
+			"color": "FF0000"
 		},
 		{
 			"name": "team2penalties",
@@ -62,7 +63,8 @@
 			"positionY": 31,
 			"width": 21,
 			"height": 29,
-			"align": "left"
+			"align": "left",
+			"color": "FF0000"
 		},
 		{
 			"name": "time",
@@ -70,7 +72,8 @@
 			"positionY": 32,
 			"width": 52,
 			"height": 15,
-			"align": "center"
+			"align": "center",
+			"color": "00FF00"
 		},
 		{
 			"name": "text",

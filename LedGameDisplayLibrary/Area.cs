@@ -12,6 +12,7 @@ namespace LedGameDisplayLibrary
         public int Width { get; set; }
         public int Height { get; set; }
         public string Align { get; set; } = "left";
+        public string Color { get; set; } = "FFFFFF";
     }
 
 

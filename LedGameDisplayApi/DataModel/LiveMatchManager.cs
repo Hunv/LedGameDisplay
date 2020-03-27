@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Timers;
 using LedGameDisplayLibrary;
@@ -60,17 +61,23 @@ namespace LedGameDisplayApi.DataModel
             _TmrTimeLeft.Elapsed += _TmrTimeLeft_Elapsed;
         }
 
-        public async static void StartHalftime(int matchId)
+        public async static Task StartHalftime(int matchId)
         {
-            CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft = CurrentMatches.Single(x => x.Id == matchId).HalfTimeTime;
-            CurrentMatches.Single(x => x.Id == matchId).CurrentHalfTime++;
-            CurrentMatches.Single(x => x.Id == matchId).MatchStatus = "running";
+            var match = CurrentMatches.Single(x => x.Id == matchId);
+            match.CurrentTimeLeft = CurrentMatches.Single(x => x.Id == matchId).HalfTimeTime;
+            match.CurrentHalfTime++;
+            match.MatchStatus = "running";
+            match.IsLive = true;
+            match.StartActual = DateTime.Now;
 
             using (var dbContext = new DatabaseContext())
             {
                 var dbMatch = dbContext.Matches.Single(x => x.Id == matchId);
                 dbMatch.CurrentTimeLeft = CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft;
                 dbMatch.CurrentHalfTime = CurrentMatches.Single(x => x.Id == matchId).CurrentHalfTime;
+                dbMatch.IsLive = match.IsLive;
+                dbMatch.MatchStatus = match.MatchStatus;
+                dbMatch.StartActual = match.StartActual;
 
                 await dbContext.SaveChangesAsync();
 
@@ -83,8 +90,18 @@ namespace LedGameDisplayApi.DataModel
             _TmrTimeLeft.Start();
         }
 
-        internal static void ShowInitScreen(int matchId)
+        public static async Task ShowInitScreen(int matchId)
         {
+            var match = CurrentMatches.Single(x => x.Id == matchId);
+
+            //Only count the Halftime, if the previous halftime is over
+            if (match.CurrentTimeLeftSeconds == 0)
+            {
+                match.CurrentHalfTime++;
+                match.CurrentTimeLeft = match.HalfTimeTime;
+            }
+            match.IsLive = true;
+
             using (var dbContext = new DatabaseContext())
             {
                 var dbMatch = dbContext.Matches.Single(x => x.Id == matchId);
@@ -102,24 +119,126 @@ namespace LedGameDisplayApi.DataModel
                     AreaName.Team2Name);
                 dM.ShowText(":",
                     AreaName.GoalDivider);
+
+                dbMatch.CurrentHalfTime = match.CurrentHalfTime;
+                dbMatch.CurrentTimeLeft = match.CurrentTimeLeft;
+                dbMatch.IsLive = match.IsLive;
+                await dbContext.SaveChangesAsync();
             }
         }
 
-        public static void PauseMatch(int matchId)
+        public static async Task Penalty(int matchId, int playerId, string penaltyStr)
+        {
+            Console.WriteLine("ID:{0} - Penalty", matchId);
+            var match = CurrentMatches.Single(x => x.Id == matchId);
+            match.IsLive = true;
+            if (match.StopTimeInLast2Minutes && match.CurrentTimeLeftSeconds <= 120)
+            {
+                _TmrTimeLeft.Stop();
+                match.MatchStatus = "paused";
+            }
+
+            DataModel.Penalty penalty = null;
+            if (playerId != 0 && !string.IsNullOrEmpty(penaltyStr))
+            {
+                var penaltyTime = 0;
+                var regEx = new Regex("\\d?");
+                if (regEx.IsMatch(penaltyStr.Split('\'')[0]))
+                {
+                    penaltyTime = Convert.ToInt32(penaltyStr.Split('\'')[0]);
+                }
+
+                if (penaltyStr.EndsWith("team")) //Team Penalty
+                {
+                    penalty = new DataModel.Penalty()
+                    {
+                        IsDismiss = penaltyStr == "000",
+                        IsTeamPenalty = true,
+                        Team = new Team() { Id = playerId },
+                        TimePlayed = match.CurrentTimeLeft,
+                        HalftimePlayed = match.CurrentHalfTime,
+                        TimeLeft = penaltyTime
+                    };
+                }
+                else //Player Penalty
+                {
+                    penalty = new DataModel.Penalty()
+                    {
+                        IsDismiss = penaltyStr == "000",
+                        IsTeamPenalty = false,
+                        Team = new Team() { Id = playerId },
+                        TimePlayed = match.CurrentTimeLeft,
+                        HalftimePlayed = match.CurrentHalfTime,
+                        TimeLeft = penaltyTime
+                    };
+                }
+            }
+
+            using (var dbContext = new DatabaseContext())
+            {
+                var dbMatch = dbContext.Matches.SingleOrDefault(x => x.Id == matchId);
+
+                if (dbMatch != null)
+                {
+                    dbMatch.Penalties.Add(penalty);
+                    dbMatch.IsLive = match.IsLive;
+                    dbMatch.MatchStatus = match.MatchStatus;
+                    await dbContext.SaveChangesAsync();
+                }
+            }
+        }
+
+        public static async Task PauseMatch(int matchId)
         {
             Console.WriteLine("ID:{0} - Pause", matchId);
-            CurrentMatches.Single(x => x.Id == matchId).MatchStatus = "paused";
+            var match = CurrentMatches.Single(x => x.Id == matchId);
+            match.MatchStatus = "paused";
+            match.IsLive = true;
+
+            _TmrTimeLeft.Stop();
+
+            using (var dbContext = new DatabaseContext())
+            {
+                var dbMatch = dbContext.Matches.SingleOrDefault(x => x.Id == matchId);
+
+                if (dbMatch != null)
+                {
+                    dbMatch.IsLive = match.IsLive;
+                    dbMatch.MatchStatus = match.MatchStatus;
+                    await dbContext.SaveChangesAsync();
+                }
+            }
         }
-        public static void UnpauseMatch(int matchId)
+        public static async Task UnpauseMatch(int matchId)
         {
             Console.WriteLine("ID:{0} - Unpause", matchId);
-            CurrentMatches.Single(x => x.Id == matchId).MatchStatus = "running";
+            var match = CurrentMatches.Single(x => x.Id == matchId);
+            match.MatchStatus = "running";
+            match.IsLive = true;
+
+            _TmrTimeLeft.Start();
+
+            using (var dbContext = new DatabaseContext())
+            {
+                var dbMatch = dbContext.Matches.SingleOrDefault(x => x.Id == matchId);
+
+                if (dbMatch != null)
+                {
+                    dbMatch.IsLive = match.IsLive;
+                    dbMatch.MatchStatus = match.MatchStatus;
+                    await dbContext.SaveChangesAsync();
+                }
+            }
         }
 
         public async static Task CancelMatch(int matchId)
         {
             Console.WriteLine("ID:{0} - Cancel", matchId);
-            CurrentMatches.Single(x => x.Id == matchId).MatchStatus = "canceled";
+            var match = CurrentMatches.Single(x => x.Id == matchId);
+            match.MatchStatus = "canceled";
+            match.IsLive = false;
+            match.EndActual = DateTime.Now;
+
             using (var dbContext = new DatabaseContext())
             {
                 var dbMatch = dbContext.Matches.SingleOrDefault(x => x.Id == matchId);
@@ -127,6 +246,8 @@ namespace LedGameDisplayApi.DataModel
                 if (dbMatch != null)
                 {
                     dbMatch.IsLive = false;
+                    dbMatch.EndActual = match.EndActual;
+                    dbMatch.MatchStatus = match.MatchStatus;
                     await dbContext.SaveChangesAsync();
                 }
             }
@@ -135,7 +256,10 @@ namespace LedGameDisplayApi.DataModel
         public async static Task EndMatch(int matchId)
         {
             Console.WriteLine("ID:{0} - End", matchId);
-            CurrentMatches.Single(x => x.Id == matchId).MatchStatus = "ended";
+            var match = CurrentMatches.Single(x => x.Id == matchId);
+            match.MatchStatus = "ended";
+            match.IsLive = true;
+            match.EndActual = DateTime.Now;
 
             using (var dbContext = new DatabaseContext())
             {
@@ -144,6 +268,8 @@ namespace LedGameDisplayApi.DataModel
                 if (dbMatch != null)
                 {
                     dbMatch.IsLive = false;
+                    dbMatch.EndActual = match.EndActual;
+                    dbMatch.MatchStatus = match.MatchStatus;
                     await dbContext.SaveChangesAsync();
                 }
             }
@@ -152,7 +278,12 @@ namespace LedGameDisplayApi.DataModel
         public async static Task FinishMatch(int matchId)
         {
             Console.WriteLine("ID:{0} - Finish", matchId);
-            CurrentMatches.Single(x => x.Id == matchId).MatchStatus = "finished";
+            var match = CurrentMatches.Single(x => x.Id == matchId);
+            match.MatchStatus = "finished";
+            match.IsLive = false;
+            //Only set the value if it is not already set by EndMatch
+            if (match.EndActual < DateTime.Now.AddDays(-7))
+                match.EndActual = DateTime.Now;
 
             using (var dbContext = new DatabaseContext())
             {
@@ -161,9 +292,15 @@ namespace LedGameDisplayApi.DataModel
                 if (dbMatch != null)
                 {
                     dbMatch.IsLive = false;
+                    //Only set the value if it is not already set by EndMatch
+                    if (match.EndActual < DateTime.Now.AddDays(-7))
+                        dbMatch.EndActual = match.EndActual;
+                    dbMatch.MatchStatus = match.MatchStatus;
                     await dbContext.SaveChangesAsync();
                 }
             }
+
+            CurrentMatches.Remove(match);
         }
 
         public async static void Goal(int matchId, int team)
