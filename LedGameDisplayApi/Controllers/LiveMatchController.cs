@@ -72,7 +72,7 @@ namespace LedGameDisplayApi.Controllers
                 {
                     case "prepare": //Prepare a match to start. The match will be marked as live but the time will not run.
                         LiveMatchManager.CurrentMatches.Single(x => x.Id == id).IsLive = true;
-
+                        LiveMatchManager.ShowInitScreen(id);
                         break;
                     case "start": //start a match. The match will be marked as live and the time will start to run.
                         LiveMatchManager.CurrentMatches.Single(x => x.Id == id).IsLive = true;
@@ -114,10 +114,10 @@ namespace LedGameDisplayApi.Controllers
                     case "goal2": //Team 2 scores a goal
                         LiveMatchManager.Goal(id, 2);
                         break;
-                    case "ungoal1": //Undo a Team 1 score
+                    case "nogoal1": //Undo a Team 1 score
                         LiveMatchManager.UnGoal(id, 1);
                         break;
-                    case "ungoal2": //Undo a Team 2 score
+                    case "nogoal2": //Undo a Team 2 score
                         LiveMatchManager.UnGoal(id, 2);
                         break;
 

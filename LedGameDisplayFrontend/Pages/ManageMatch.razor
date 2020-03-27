@@ -8,54 +8,67 @@
 
 @if (match == null)
 {
-    <p><em>Loading...</em></p>
+<p><em>Loading...</em></p>
 }
 else
 {
-    <h1>@match.Team1.Name vs @match.Team2.Name</h1>
-    <a>Geplante Startzeit: @match.StartPlaned.ToString()</a>
-    <br />
-    <a>Tatsächliche Startzeit: @match.StartActual.ToString()</a>
-    <br />
+<h1>@match.Team1.Name vs @match.Team2.Name</h1>
+<a>Geplante Startzeit: @match.StartPlaned.ToString()</a>
+<br />
+<a>Tatsächliche Startzeit: @match.StartActual.ToString()</a>
+<br />
 
-    <a href="/editmatch">Match bearbeiten</a>
+<a href="/editmatch">Match bearbeiten</a>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>@match.Team1.Name</th>
-                <th>@match.Team2.Name</th>
-                <th>Restzeit</th>
-                <th>Halbzeit</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><h2>@match.ScoreTeam1</h2></td>
-                <td><h2>@match.ScoreTeam2</h2></td>
-                <td><h2>@match.CurrentTimeLeft.ToString()</h2></td>
-                <td><h2>@match.CurrentHalfTime</h2></td>
-                <td></td>
-            </tr>
-        </tbody>
-    </table>
+<table class="table">
+    <thead>
+        <tr>
+            <th>@match.Team1.Name</th>
+            <th>@match.Team2.Name</th>
+            <th>Restzeit</th>
+            <th>Halbzeit</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                <h2>@match.ScoreTeam1</h2>
+                <button disabled="@IsNotLive" class="btn btn-primary" @onclick="GoalTeam1"> + </button>
+                <button disabled="@IsNotLive" class="btn btn-primary" @onclick="NoGoalTeam1"> - </button>
+            </td>
+            <td>
+                <h2>@match.ScoreTeam2</h2>
+                <button disabled="@IsNotLive" class="btn btn-primary" @onclick="GoalTeam2"> + </button>
+                <button disabled="@IsNotLive" class="btn btn-primary" @onclick="NoGoalTeam2"> - </button>
+            </td>
+            <td>
+                <h2>@match.CurrentTimeLeft.ToString()</h2>
+                <button disabled="@IsNotLive" class="btn btn-primary" @onclick="UnpauseMatch"> ▶ </button>
+                <button disabled="@IsNotLive" class="btn btn-primary" @onclick="PauseMatch"> ◼ </button>
+            </td>
+            <td><h2>@match.CurrentHalfTime</h2></td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
 
-    <h2>Schiedsrichter:</h2>
-    <ul>
-        @foreach (var referee in match.Referees)
-        {
-            <li>@referee.Firstname @referee.Lastname (@referee.Team)</li>
-        }
-    </ul>
+<h2>Schiedsrichter:</h2>
+<ul>
+    @foreach (var referee in match.Referees)
+    {
+        <li>@referee.Firstname @referee.Lastname (@referee.Team.Name)</li>
+    }
+</ul>
 
-    <button class="btn btn-primary" @onclick="StartMatch">Match starten</button>
-    <button class="btn btn-primary" @onclick="PauseMatch">Match pausieren</button>
-    <button class="btn btn-primary" @onclick="UnpauseMatch">Match fortsetzen</button>
+<button disabled="@IsLive" class="btn btn-primary" @onclick="StartMatch">Halbzeit starten</button>
+<button disabled="@IsLive" class="btn btn-primary" @onclick="EndMatch">Match abschließen</button>
 }
 
 @code {
     private Match match = null;
+    private bool IsNotLive = true;
+    private bool IsLive { get { return !IsNotLive; } }
     private System.Timers.Timer tmrMatchtime = new System.Timers.Timer(1000);
 
     [Parameter]
@@ -70,13 +83,15 @@ else
         }
 
         tmrMatchtime.Elapsed += OnTmrMatchtimeElapsed;
+
+        await PanelApiService.UpdateLiveMatchAsync(match.Id, "prepare");
     }
 
     private async void OnTmrMatchtimeElapsed(Object source, System.Timers.ElapsedEventArgs e)
     {
         match.CurrentTimeLeft = match.CurrentTimeLeft.Subtract(new TimeSpan(0, 0, 1));
 
-        if (match.HalfTimeTime.TotalSeconds == 0)
+        if (match.CurrentTimeLeft.TotalSeconds <= 0)
         {
             tmrMatchtime.Stop();
 
@@ -84,6 +99,12 @@ else
             {
                 match.CurrentHalfTime++;
                 match.CurrentTimeLeft = match.HalfTimeTime;
+                IsNotLive = true;
+            }
+            else if (match.CurrentHalfTime == match.HalfTimeAmount)
+            {
+                IsNotLive = true;
+                await PanelApiService.UpdateLiveMatchAsync(match.Id, "end");
             }
         }
 
@@ -105,6 +126,15 @@ else
     {
         await PanelApiService.UpdateLiveMatchAsync(match.Id, "start");
         tmrMatchtime.Start();
+        IsNotLive = false;
+        match.CurrentHalfTime++;
+    }
+
+    private async void EndMatch()
+    {
+        tmrMatchtime.Stop();
+        IsNotLive = true;
+        await PanelApiService.UpdateLiveMatchAsync(match.Id, "finish");
     }
 
     private async Task PauseMatch()
@@ -117,6 +147,26 @@ else
     {
         await PanelApiService.UpdateLiveMatchAsync(match.Id, "unpause");
         tmrMatchtime.Stop();
+    }
+
+    private async Task GoalTeam1()
+    {
+        await PanelApiService.UpdateLiveMatchAsync(match.Id, "goal1");
+    }
+
+    private async Task NoGoalTeam1()
+    {
+        await PanelApiService.UpdateLiveMatchAsync(match.Id, "nogoal1");
+    }
+
+    private async Task GoalTeam2()
+    {
+        await PanelApiService.UpdateLiveMatchAsync(match.Id, "goal2");
+    }
+
+    private async Task NoGoalTeam2()
+    {
+        await PanelApiService.UpdateLiveMatchAsync(match.Id, "nogoal2");
     }
 }
 

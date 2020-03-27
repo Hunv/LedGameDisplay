@@ -83,6 +83,28 @@ namespace LedGameDisplayApi.DataModel
             _TmrTimeLeft.Start();
         }
 
+        internal static void ShowInitScreen(int matchId)
+        {
+            using (var dbContext = new DatabaseContext())
+            {
+                var dbMatch = dbContext.Matches.Single(x => x.Id == matchId);
+
+                DisplayManager dM = new DisplayManager();
+                dM.ShowText(string.Format("{0}:{1}", CurrentMatches.Single(x => x.Id == matchId).HalfTimeTime.Minutes.ToString("D2"), CurrentMatches.Single(x => x.Id == matchId).CurrentTimeLeft.Seconds.ToString("D2")),
+                    AreaName.Time);
+                dM.ShowText(dbMatch.ScoreTeam1.ToString(),
+                    AreaName.Team1Goals);
+                dM.ShowText(dbMatch.ScoreTeam2.ToString(),
+                    AreaName.Team2Goals);
+                dM.ShowText(dbMatch.Team1 == null ? "Team1" : dbMatch.Team1.Name ?? "Team1",
+                    AreaName.Team1Name);
+                dM.ShowText(dbMatch.Team2 == null ? "Team2" : dbMatch.Team2.Name ?? "Team2",
+                    AreaName.Team2Name);
+                dM.ShowText(":",
+                    AreaName.GoalDivider);
+            }
+        }
+
         public static void PauseMatch(int matchId)
         {
             Console.WriteLine("ID:{0} - Pause", matchId);
@@ -147,16 +169,27 @@ namespace LedGameDisplayApi.DataModel
         public async static void Goal(int matchId, int team)
         {
             Console.WriteLine("ID:{0} - Goal for team {1}", matchId, team);
+
+            DisplayManager dM = new DisplayManager();
+            var match = CurrentMatches.Single(x => x.Id == matchId);
             if (team == 1)
-                CurrentMatches.Single(x => x.Id == matchId).ScoreTeam1++;
+            {
+                match.ScoreTeam1++;
+                dM.ShowText(match.ScoreTeam1.ToString(),
+                    AreaName.Team1Goals);
+            }
             else if (team == 2)
-                CurrentMatches.Single(x => x.Id == matchId).ScoreTeam2++;
+            {
+                match.ScoreTeam2++;
+                dM.ShowText(match.ScoreTeam2.ToString(),
+                    AreaName.Team2Goals);
+            }
 
             using (var dbContext = new DatabaseContext())
             {
-                var dbMatch = dbContext.Matches.Single(x => x.Id == CurrentMatches.Single(x => x.Id == matchId).Id);
-                dbMatch.ScoreTeam1 = CurrentMatches.Single(x => x.Id == matchId).ScoreTeam1;
-                dbMatch.ScoreTeam2 = CurrentMatches.Single(x => x.Id == matchId).ScoreTeam2;
+                var dbMatch = dbContext.Matches.Single(x => x.Id == match.Id);
+                dbMatch.ScoreTeam1 = match.ScoreTeam1;
+                dbMatch.ScoreTeam2 = match.ScoreTeam2;
                 await dbContext.SaveChangesAsync();
             }
         }
@@ -165,16 +198,26 @@ namespace LedGameDisplayApi.DataModel
         {
             Console.WriteLine("ID:{0} - Nogoal for team {1}", matchId, team);
 
+            DisplayManager dM = new DisplayManager();
+            var match = CurrentMatches.Single(x => x.Id == matchId);
             if (team == 1)
-                CurrentMatches.Single(x => x.Id == matchId).ScoreTeam1--;
+            {
+                match.ScoreTeam1--;
+                dM.ShowText(match.ScoreTeam1.ToString(),
+                    AreaName.Team1Goals);
+            }
             else if (team == 2)
-                CurrentMatches.Single(x => x.Id == matchId).ScoreTeam2--;
+            {
+                match.ScoreTeam2--;
+                dM.ShowText(match.ScoreTeam2.ToString(),
+                    AreaName.Team2Goals);
+            }
 
             using (var dbContext = new DatabaseContext())
             {
-                var dbMatch = dbContext.Matches.Single(x => x.Id == CurrentMatches.Single(x => x.Id == matchId).Id);
-                dbMatch.ScoreTeam1 = CurrentMatches.Single(x => x.Id == matchId).ScoreTeam1;
-                dbMatch.ScoreTeam2 = CurrentMatches.Single(x => x.Id == matchId).ScoreTeam2;
+                var dbMatch = dbContext.Matches.Single(x => x.Id == match.Id);
+                dbMatch.ScoreTeam1 = match.ScoreTeam1;
+                dbMatch.ScoreTeam2 = match.ScoreTeam2;
                 await dbContext.SaveChangesAsync();
             }
         }
