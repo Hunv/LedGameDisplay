@@ -200,7 +200,7 @@ namespace LedGameDisplayLibrary
                                     continue;
 
                                 var baseBrightness = (byte)(((int.Parse(charContent[pxNum].ToString(), System.Globalization.NumberStyles.HexNumber) + 1) * 16) - 1);
-                                charDefinition.Pixels[pxNum, lineCount] = Color.FromArgb(baseBrightness, 255, 255, 255);
+                                charDefinition.Pixels[pxNum, lineCount] = Color.FromArgb(baseBrightness, 0, 0, 0);
                             }
                         }
                         catch (Exception ea)
@@ -262,9 +262,14 @@ namespace LedGameDisplayLibrary
                 var posX = area.PositionX;
                 var posY = area.PositionY;
 
+                var r = int.Parse(area.Color.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
+                var g = int.Parse(area.Color.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
+                var b = int.Parse(area.Color.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
+                    
+
                 foreach (var aChar in text.ToCharArray())
                 {
-                    var charObj = charSet.Characters.SingleOrDefault(x => x.Char == aChar);
+                    var charObj = charSet.Characters.SingleOrDefault(x => x.Char == aChar);                    
 
                     for (int x = 0; x < charObj.Width; x++)
                     {
@@ -277,10 +282,9 @@ namespace LedGameDisplayLibrary
                             var ledNum = GetLedNumber(posX + x, posY + y);
                             //Console.WriteLine("Setting X={0}/{1} and Y={2}/{3} with LED Number {4}", area.PositionX, x, area.PositionY, y, ledNum);
 
-                            SetLed(ledNum, Color.FromArgb(charObj.Pixels[x, y].A, 
-                                                         int.Parse(area.Color.Substring(0, 2), System.Globalization.NumberStyles.HexNumber),
-                                                         int.Parse(area.Color.Substring(2, 2), System.Globalization.NumberStyles.HexNumber),
-                                                         int.Parse(area.Color.Substring(4, 2), System.Globalization.NumberStyles.HexNumber)));
+                            var brightnessfactor = charObj.Pixels[x, y].A / 255;
+                            var color = Color.FromArgb(r * brightnessfactor, g * brightnessfactor, b * brightnessfactor);
+                            SetLed(ledNum, color);
                         }
                     }
 
@@ -303,6 +307,10 @@ namespace LedGameDisplayLibrary
                 var posY = area.PositionY;
                 var centerOffsetX = area.Width / 2 - textWidth / 2;
 
+                var r = int.Parse(area.Color.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
+                var g = int.Parse(area.Color.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
+                var b = int.Parse(area.Color.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
+
                 //Console.WriteLine("posX={0},areaWidth={1},textWidth={2},centerOffsetX={3}", posX, area.Width, textWidth,centerOffsetX);
 
                 //Set the new text centered
@@ -321,10 +329,9 @@ namespace LedGameDisplayLibrary
                             var ledNum = GetLedNumber(posX + x + centerOffsetX, posY + y);
                             //Console.WriteLine("Setting X={0}/{1} and Y={2}/{3} with LED Number {4}", area.PositionX, x, area.PositionY, y, ledNum);
 
-                            SetLed(ledNum, Color.FromArgb(charObj.Pixels[x, y].A,
-                                                         int.Parse(area.Color.Substring(0, 2), System.Globalization.NumberStyles.HexNumber),
-                                                         int.Parse(area.Color.Substring(2, 2), System.Globalization.NumberStyles.HexNumber),
-                                                         int.Parse(area.Color.Substring(4, 2), System.Globalization.NumberStyles.HexNumber)));
+                            var brightnessfactor = charObj.Pixels[x, y].A / 255;
+                            var color = Color.FromArgb(r * brightnessfactor, g * brightnessfactor, b * brightnessfactor);
+                            SetLed(ledNum, color);
                         }
                     }
 
@@ -336,6 +343,9 @@ namespace LedGameDisplayLibrary
                 var posX = area.PositionX + area.Width;
                 var posY = area.PositionY;
 
+                var r = int.Parse(area.Color.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
+                var g = int.Parse(area.Color.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
+                var b = int.Parse(area.Color.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
                 //Console.WriteLine("posX={0},areaWidth={1}", posX, area.Width);
 
                 //Set the new text right. Take the last character first
@@ -356,11 +366,9 @@ namespace LedGameDisplayLibrary
 
                             var ledNum = GetLedNumber(posX - x, posY + y);
                             //Console.WriteLine("Setting X={0}/{1} and Y={2}/{3} with LED Number {4}", area.PositionX, x, area.PositionY, y, ledNum);
-
-                            SetLed(ledNum, Color.FromArgb(charObj.Pixels[x, y].A,
-                                                         int.Parse(area.Color.Substring(0, 2), System.Globalization.NumberStyles.HexNumber),
-                                                         int.Parse(area.Color.Substring(2, 2), System.Globalization.NumberStyles.HexNumber),
-                                                         int.Parse(area.Color.Substring(4, 2), System.Globalization.NumberStyles.HexNumber)));
+                            var brightnessfactor = charObj.Pixels[x, y].A / 255;
+                            var color = Color.FromArgb(r * brightnessfactor, g * brightnessfactor, b * brightnessfactor);
+                            SetLed(ledNum, color);
                         }
                     }
 
@@ -374,6 +382,10 @@ namespace LedGameDisplayLibrary
         {
             var area = LayoutConfig.AreaList.Single(x => x.Name == areaName);
 
+            var r = int.Parse(area.Color.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
+            var g = int.Parse(area.Color.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
+            var b = int.Parse(area.Color.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
+
             for (int x = 0; x < charObj.Width; x++)
             {
                 for (int y = 0; y < charObj.Height; y++)
@@ -385,10 +397,10 @@ namespace LedGameDisplayLibrary
                     var ledNum = GetLedNumber(area.PositionX + x, area.PositionY + y);
                     //Console.WriteLine("Setting X={0}/{1} and Y={2}/{3} with LED Number {4}", area.PositionX, x, area.PositionY, y, ledNum);
 
-                    SetLed(ledNum, Color.FromArgb(charObj.Pixels[x, y].A,
-                                                 int.Parse(area.Color.Substring(0, 2), System.Globalization.NumberStyles.HexNumber),
-                                                 int.Parse(area.Color.Substring(2, 2), System.Globalization.NumberStyles.HexNumber),
-                                                 int.Parse(area.Color.Substring(4, 2), System.Globalization.NumberStyles.HexNumber)));
+                    var brightnessfactor = charObj.Pixels[x, y].A / 255;
+                    var color = Color.FromArgb(r * brightnessfactor, g * brightnessfactor, b * brightnessfactor);
+
+                    SetLed(ledNum, color);
                 }
             }
             if (finalRender) Render();
